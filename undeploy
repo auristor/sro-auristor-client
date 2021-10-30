@@ -1,0 +1,4 @@
+oc delete specialresource auristor-client
+oc delete cm  -n auristor-client auristor-client-chart
+
+

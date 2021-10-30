@@ -1,0 +1,26 @@
+# Create auristor-client-0.0.1.tgz
+cd charts
+helm package auristor-client-0.0.1
+
+# Copy Helm Chart into ConfigMap (cm) directory
+mkdir -p cm
+cp auristor-client-0.0.1.tgz cm/auristor-client-0.0.1.tgz
+
+# Create an index file specifying the Helm repo that contains the Helm chart
+helm repo index cm --url=cm://auristor-client/auristor-client-chart
+
+# Create namespace 
+if oc get namespace auristor-client >/dev/null; then
+  echo namespace auristor-client already exists
+else
+  oc create namespace auristor-client 
+fi 
+
+# Create ConfigMap object
+oc delete -n auristor-client cm auristor-client-chart --ignore-not-found=true
+oc create -n auristor-client cm auristor-client-chart --from-file=cm/index.yaml --from-file=cm/auristor-client-0.0.1.tgz 
+
+
+oc create -f cm/auristor-client-from-configmap.yaml
+
+
