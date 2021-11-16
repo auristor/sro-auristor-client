@@ -1,0 +1,24 @@
+apiVersion: sro.openshift.io/v1beta1
+kind: SpecialResource
+metadata:
+  name: auristor-client
+spec:
+  namespace: auristor-client
+  chart:
+    name: auristor-client
+    version: 0.0.1
+    repository:
+      name: example
+      url: file:///charts/example
+  set:
+    kind: Values
+    apiVersion: sro.openshift.io/v1beta1
+    kmodNames: ["yfs"]
+    buildArgs:
+    - name: "KMODVER"
+      value: "SRO"
+  driverContainer:
+    source:
+      git:
+        ref: "master"
+        uri: "https://github.com/auristor/kvc-auristor-client.git"
