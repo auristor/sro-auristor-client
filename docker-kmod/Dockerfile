@@ -1,4 +1,4 @@
-ARG IMAGE=hub.docker.com:dariaphoebe.auristor-sro:latest
+ARG IMAGE=dariaphoebe/auristor-kvc-sro:latest
 
 FROM $IMAGE
 WORKDIR /build/
@@ -14,5 +14,5 @@ ADD AURISTOR-GPG-KEY-v1 .
 ADD auristor.repo /etc/yum.repos.d/auristor.repo
 
 RUN echo v$KMOD_SOFTWARE_VERSION > /etc/dnf/vars/auristorver && \
-    rpm --import AURISTOR-GPG-KEY-v1   && \   
-    dnf download kmod-yfs-${KMOD_SOFTWARE_VERSION}-${KVER}.${KMOD_RELEASE}.el8.x86_64.rpm && rpm2cpio kmod-yfs-${KMOD_SOFTWARE_VERSION}-${KVER}.${KMOD_RELEASE}.el8.x86_64.rpm |(cd / && cpio -id \*.ko)
+    rpm --import AURISTOR-GPG-KEY-v1   && dnf install -y cpio && \   
+    dnf download $(dnf list --showduplicates kmod-yfs-${KMOD_SOFTWARE_VERSION}|grep ${KVER}|tail -1|awk '{print "kmod-yfs-" $2}') && rpm2cpio kmod-yfs*.rpm |(cd / && cpio -id \*.ko)
