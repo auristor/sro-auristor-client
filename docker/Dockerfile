@@ -13,8 +13,6 @@ ADD AURISTOR-GPG-KEY-v1 .
 
 ADD auristor.repo /etc/yum.repos.d/auristor.repo
 
-ADD yfs-client.conf /etc/yfs/yfs-client.conf
-
 ADD firewalld-filesystem-0.9.3-7.el8.noarch.rpm .
 
 ADD kmod-yfs-nokernel-${KMOD_SOFTWARE_VERSION}-${KMOD_RELEASE}.noarch.rpm .

@@ -1,4 +1,4 @@
-ARG IMAGE=dariaphoebe/auristor-kmod-sro:latest
+ARG IMAGE=dariaphoebe/auristor-config-yfs-sro:latest
 
 FROM $IMAGE
 WORKDIR /build/
