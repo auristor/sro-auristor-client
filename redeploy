@@ -1,0 +1,4 @@
+
+./undeploy
+./build
+./deploy

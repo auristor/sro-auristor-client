@@ -1,3 +1,4 @@
+#!/bin/bash
 # Create auristor-client-0.0.1.tgz
 cd charts
 helm package auristor-client-0.0.1
