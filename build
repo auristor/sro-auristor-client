@@ -1,0 +1,12 @@
+echo == Repackage Helm script for deployable yaml objects ===
+
+# Create auristor-client-0.0.1.tgz
+cd charts
+helm package auristor-client-0.0.1
+
+# Copy Helm Chart into ConfigMap (cm) directory
+mkdir -p cm
+cp auristor-client-0.0.1.tgz cm/auristor-client-0.0.1.tgz
+
+# Create an index file specifying the Helm repo that contains the Helm chart
+helm repo index cm --url=cm://auristor-client/auristor-client-chart
