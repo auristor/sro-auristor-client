@@ -1,4 +1,4 @@
-ARG IMAGE=dariaphoebe/auristor-kmod-sro:latest
+ARG IMAGE=localhost:5000/auristor-sro-kerberos:latest
 
 FROM $IMAGE
 WORKDIR /build/

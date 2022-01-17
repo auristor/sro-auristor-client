@@ -1,4 +1,4 @@
-ARG IMAGE=registry.access.redhat.com/ubi8/ubi
+ARG IMAGE=localhost:5000/ubi
 
 FROM $IMAGE
 WORKDIR /build/
