@@ -67,7 +67,6 @@ display_message() {
 
 build_kmod_container() {
     display_message "build_kmod_container"  "Building ${IMAGE} kernel module container at image-registry.openshift-image-registry.svc:5000/auristor-client/${IMAGE}"
-#    skopeo copy --dest-creds="builder:$TOKEN" --dest-tls-verify=false docker://moniker.auristor.com:5000/auristor-sro-kmod:latest docker://image-registry.openshift-image-registry.svc:5000/auristor-client/${IMAGE}
     display_message "build_kmod_container"  "skopeo completed"
 
     #kvc_c_build -t ${IMAGE}                              \
