@@ -1,4 +1,21 @@
 #!/bin/bash
+echo === Deploying SRO ===
+
+# Create namespace 
+if oc get namespace auristor-client >/dev/null; then
+  echo namespace auristor-client already exists
+else
+  oc create namespace auristor-client 
+fi 
+
+# Create ConfigMap object
+oc delete -n auristor-client cm auristor-client-chart --ignore-not-found=true
+oc create -n auristor-client cm auristor-client-chart --from-file=charts/cm/index.yaml --from-file=charts/cm/auristor-client-0.0.1.tgz 
+
+
+oc create -f charts/auristor-client.yaml
+
+exit 0
 # Create auristor-client-0.0.1.tgz
 cd charts
 helm package auristor-client-0.0.1
