@@ -78,24 +78,37 @@ spec:
               command: ["/bin/sh", "-c", "systemctl stop kmods-via-containers@{{.Values.specialresource.metadata.name}}"]
         securityContext:
           privileged: true
-        # volumeMounts:
-        # - name: auristor-config
-        #   mountPath: /root/stuff
+        volumeMounts:
+        - name: yfs-cache
+          mountPath: /var/cache/yfs
+          {{- range .Values.kmodDriverContainer.directories }}
+        - name: {{ .label }}
+          mountPath: {{ .target }}
+          {{ end }}
+
       nodeSelector:
         node-role.kubernetes.io/worker: ""
         feature.node.kubernetes.io/kernel-version.full: "{{.Values.kernelFullVersion}}"
-#       volumes:
-#         - name: auristor-config
-#           configMap:
-#             name: auristor-csi-cm
-# ---
- 
-# apiVersion: v1
-# kind: ConfigMap
-# metadata:
-#   name: auristor-csi-cm
-#   namespace: default
-# data:
-#   dog: Bear
-#   love: Alice
+      volumes:
+      - name: yfs-cache
+        hostPath: 
+          path: {{ .Values.kmodDriverContainer.yfsCache }}
+      {{- range .Values.kmodDriverContainer.directories }}
+      - name: {{ .label }}
+        configMap: 
+          name: {{ .label }}
+        {{ end }}  
 
+
+{{- range .Values.kmodDriverContainer.directories }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .label }}
+data:
+  {{- range $k, $v := .files }}
+  {{ $k }}: |{{ $v }}
+  {{ end }}
+  ace: Venture
+{{ end }}

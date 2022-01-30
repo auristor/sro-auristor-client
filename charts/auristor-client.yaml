@@ -25,6 +25,65 @@ spec:
       value: "\"12\""
     auristorRegistry: "registry.gitlab.com/justinlukin/cr"
     auristorVersion: "2021.05-15"
+    kmodDriverContainer:
+      yfsCache: /var/cache/yfs
+      directories:
+        - label: etc-yfs
+          target: /etc/yfs
+          files:
+            yfs-client.conf: |
+              # This Comment is required (at this indenting) to satisfy helm indenting
+                  # Insert yfs-client.conf contents here (at this indenting)
+
+                  # This merges the grand.central.org [cells] section:
+                  include /usr/share/yfs/cellservdb.conf
+                  # includedir /etc/yfs/yfs-client.conf.d
+
+                  [defaults]
+                  # You need to set a thiscell here
+                    thiscell = your-file-system.com
+
+                  [afsd]
+                      blocks = 100000
+                      debug = yes
+                      # memcache = yes
+                      nomount = yes
+
+                  [cells]
+                  # You may define your own cells here.
+            other: |
+              # This Comment is required (at this indenting) to satisfy helm indenting
+                  # Insert yfs-client.conf contents here (at this indenting)
+                  This is something else      
+        - label: usr-share-yfs
+          target: /usr/share/yfs
+          files:
+            cellservdb.conf: |
+              # This Comment is required (at this indenting) to satisfy helm indenting
+                  # AuriStorFS cellservdb client configuration
+                  # 1 March 2021
+                  #
+                  # This file should be placed in the yfs-client.conf.d directory
+                  # or be included from within the yfs-client.conf file.
+
+                  [cells]
+                    # umich.edu imported from AFSDB
+                    umich.edu = {
+                      description = "University of Michigan - Campus"
+                      use_dns = yes
+                      servers = {
+                        fear.ifs.umich.edu = {
+                          address = 141.211.1.32
+                        }
+                        surprise.ifs.umich.edu = {
+                          address = 141.211.1.33
+                        }
+                        ruthless.ifs.umich.edu = {
+                          address = 141.211.1.34
+                        }
+                      }
+                    }
+
 
   driverContainer:
     source:
