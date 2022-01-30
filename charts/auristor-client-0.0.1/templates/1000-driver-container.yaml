@@ -54,15 +54,22 @@ spec:
       # a failure.  This annotation works in tandem with the toleration below.
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
+        kfv: {{ .Values.kernelFullVersion  }}
       labels:
         app: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}
     spec:
       serviceAccount: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}
       serviceAccountName: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}
       containers:
-      # image: image-registry.openshift-image-registry.svc:5000/{{.Values.specialresource.spec.namespace}}/{{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}:v{{.Values.kernelFullVersion}}
-      - image: moniker.auristor.com:5000/auristor-sro-kmod:latest
-        name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}
+      - name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}
+
+        {{- $kfvSplit := splitList   "." .Values.kernelFullVersion  }}
+        {{- $elVersionSplit :=  index $kfvSplit 5 | splitList "_"}}
+
+        image: {{ .Values.auristorRegistry }}/auristor-sro-kmod-{{ .Values.auristorVersion }}:
+                      {{- index $kfvSplit 0 -}}.{{- index $kfvSplit 1 -}}.{{- index $kfvSplit 2 -}}.
+                      {{- index $elVersionSplit 0 -}}.{{- index $kfvSplit 6 }}      
+        
         imagePullPolicy: Always
         command: ["/sbin/init"]
         lifecycle:
@@ -71,6 +78,24 @@ spec:
               command: ["/bin/sh", "-c", "systemctl stop kmods-via-containers@{{.Values.specialresource.metadata.name}}"]
         securityContext:
           privileged: true
+        # volumeMounts:
+        # - name: auristor-config
+        #   mountPath: /root/stuff
       nodeSelector:
         node-role.kubernetes.io/worker: ""
-        feature.node.kubernetes.io/kernel-version.full: "{{.Values.KernelFullVersion}}"
+        feature.node.kubernetes.io/kernel-version.full: "{{.Values.kernelFullVersion}}"
+#       volumes:
+#         - name: auristor-config
+#           configMap:
+#             name: auristor-csi-cm
+# ---
+ 
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: auristor-csi-cm
+#   namespace: default
+# data:
+#   dog: Bear
+#   love: Alice
+

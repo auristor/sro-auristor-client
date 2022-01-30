@@ -23,6 +23,9 @@ spec:
       value: "\"2021.05\""
     - name: "KMOD_RELEASE"
       value: "\"12\""
+    auristorRegistry: "registry.gitlab.com/justinlukin/cr"
+    auristorVersion: "2021.05-15"
+
   driverContainer:
     source:
       git:
