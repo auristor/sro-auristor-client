@@ -22,3 +22,6 @@ RUN echo v$KMOD_SOFTWARE_VERSION > /etc/dnf/vars/auristorver && \
     rpm -Uvh firewalld-filesystem-0.9.3-7.el8.noarch.rpm && \
     rpm -Uvh kmod-yfs-nokernel-${KMOD_SOFTWARE_VERSION}-${KMOD_RELEASE}.noarch.rpm && \
     dnf install -y yfs yfs-client
+
+RUN rm -f firewalld-filesystem-0.9.3-7.el8.noarch.rpm kmod-yfs-nokernel-${KMOD_SOFTWARE_VERSION}-${KMOD_RELEASE}.noarch.rpm AURISTOR-GPG-KEY-v1
+RUN dnf clean all

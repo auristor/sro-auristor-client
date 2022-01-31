@@ -15,5 +15,6 @@ ADD auristor.repo /etc/yum.repos.d/auristor.repo
 
 RUN echo v$KMOD_SOFTWARE_VERSION > /etc/dnf/vars/auristorver && \
     rpm --import AURISTOR-GPG-KEY-v1   && dnf install -y cpio && \   
-    dnf download $(dnf list --showduplicates kmod-yfs-${KMOD_SOFTWARE_VERSION}|grep ${KVER}|tail -1|awk '{print "kmod-yfs-" $2}') && rpm2cpio kmod-yfs*.rpm |(cd / && cpio -id \*.ko)
-
+    dnf download $(dnf list --showduplicates kmod-yfs-${KMOD_SOFTWARE_VERSION}|grep ${KVER}|tail -1|awk '{print "kmod-yfs-" $2}') && rpm2cpio kmod-yfs*.rpm |(cd / && cpio -id \*.ko) && rm kmod-yfs*.rpm
+RUN dnf clean all
+RUN rm -rf /var/cache/yum
