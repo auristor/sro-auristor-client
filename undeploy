@@ -1,5 +1,34 @@
 #!/bin/bash
+
+waitForAllVolumeRemantsToBeGone() {
+    echo Waiting for all Volume Remnants to be gone
+
+    while true ;
+    do
+        foo=$( oc get specialresource auristor-client  | wc -l)
+
+        if [ "$foo" -gt "0" ]; then
+            echo waiting for specialresource/auristor-client to terminate
+            sleep 2
+        else
+            break
+        fi
+    done
+}
+
 oc delete specialresource auristor-client
 oc delete cm  -n auristor-client auristor-client-chart
+
+while true ;
+do
+    foo=$( oc get specialresource auristor-client  | wc -l)
+
+    if [ "$foo" -gt "0" ]; then
+        echo waiting for specialresource/auristor-client to terminate
+        sleep 2
+    else
+        break
+    fi
+done
 
 
