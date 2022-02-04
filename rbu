@@ -1,0 +1,5 @@
+TARGET=$GP/tmp/bu/$1
+
+PRIMARY=2075-retry-csi.yaml
+
+cp $TARGET/$PRIMARY charts/auristor-client-0.0.1/templates/$PRIMARY 

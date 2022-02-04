@@ -18,14 +18,15 @@ spec:
     kind: Values
     apiVersion: sro.openshift.io/v1beta1
     kmodNames: ["yfs"]
-    buildArgs:
-    - name: "KMOD_SOFTWARE_VERSION"
-      value: "\"2021.05\""
-    - name: "KMOD_RELEASE"
-      value: "\"12\""
-    auristorRegistry: "registry.gitlab.com/justinlukin/cr"
+    auristorRegistry: "ghcr.io/auristor"
     auristorVersion: "2021.05-15"
+    
+    runArgs:
+      platform: "openshift-container-platform"
     kmodDriverContainer:
+      auristorRegistry: "ghcr.io/auristor"
+      auristorKmodVersion: "2021.05-15"
+      terminationGracePeriodSeconds: 3
       yfsCache: /var/cache/yfs
       directories:
         - label: etc-yfs
@@ -84,6 +85,41 @@ spec:
                       }
                     }
 
+    csiDriver:
+      auristorCsiVersion: 2022-02.1
+      csiDriverImage: ghcr.io/auristor/auristor-csi:2022-02.1
+      csiDriverImagePullPolicy: Always
+      k8sSigStorageRegistry: k8s.gcr.io/sig-storage
+      auristorRegistry: ghcr.io/auristor
+
+      defaultCacheManager: auristor
+      afsRootDir: null
+      nodeSelector: none   
+
+
+      externalVolumeManagerURL: http://volume-manager       ## Default implementation provided
+
+      logLevel: DEBUG                      # Log level for all components (DEBUG, INFO, WARNING, ERROR, or FATAL)
+      flattenLog: "false"                   # Set to true to fold all logging messages to one line (in particular stack traces, though it makes them harder to read)
+
+      ## Validate AuristorFS volume status during CSI phase
+      controllerCreateVolumeValidation: None    # 	None, Exists, or Online
+      controllerPublishVolumeValidation: None   # 	None, Exists, or Online
+      nodeStageVolumeValidation: None           # 	None, Exists, or Online
+      nodePublishVolumeValidation: None         # 	None, Exists, or Online
+
+      # Values which affect PV and volumeHandle names
+      volumeNamePrefix: afs              # PV Name Prefix
+      volumeNameUuidLength: "-1"         # Shortens PV names which is useful during debugging
+      pvUIDLength: "10"                  # Shortens internal PVHandle name which is useful during debugging
+
+      # Debugging Options
+      debugShowCsiRequests: "false"
+      debugShowMounts: "true"
+      debugShowExecs: "true"
+
+      defaultFileServerHost: fs1.example.com
+      defaultFileServerPartition: a
 
   driverContainer:
     source:

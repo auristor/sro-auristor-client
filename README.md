@@ -1,3 +1,31 @@
+# THIS MULTI-PHASE IS NOT READY
+
+* Waiting for response from Red Hat regarding 'endpoint' and 'volumeattachment' privilege escallation
+* 3000-csi-driver.yaml - is currently parked on the root.  It needs to be moved back to templates
+* 2075-retry-csi.yaml - is the iterative test version. Currently in 'fairly' good shape.  Needs to be merged into csiDriver repo's chart
+* Need to revisit values.yaml vs auristor-client.yaml  (namely )
+
+        charts/auristor-client.yaml
+        values.yaml
+
+* Lots of cruft on the root still
+
+        1000-driver-container.yaml
+        2050-faux-csi-working.yaml
+        2050-faux-csi.yaml
+        2075-retry-csi.yaml
+        2100-pookie.yaml
+        3000-csi-driver.yaml
+        bu
+        cbu
+        charts/auristor-client-0.0.1/templates/2075-retry-csi.yaml
+        rbu
+* Add validation: https://helm.sh/docs/topics/charts/#schema-files
+* Add Defaults as a subchart: https://helm.sh/docs/topics/charts/#schema-files
+
+
+
+
 # The AuriStor SRO Client
 
 The AuriStor SRO Client can be built and deployed/undeployed with these scripts (recommended)
