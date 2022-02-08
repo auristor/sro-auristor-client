@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo === Undeploying Auristor Special Resource ===
+
+NAMESPACE=${1:-"auristor-client"}
+
 waitForAllVolumeRemantsToBeGone() {
     echo Waiting for all Volume Remnants to be gone
 
@@ -17,7 +21,7 @@ waitForAllVolumeRemantsToBeGone() {
 }
 
 oc delete specialresource auristor-client
-oc delete cm  -n auristor-client auristor-client-chart
+oc delete cm  -n $NAMESPACE auristor-client-chart
 
 while true ;
 do

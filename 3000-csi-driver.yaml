@@ -34,35 +34,35 @@ kind: ServiceAccount
 metadata:
   name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-node
 
----
+# ---
 
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-node
-rules:
-- apiGroups:
-  - security.openshift.io
-  resources:
-  - securitycontextconstraints
-  verbs:
-  - use
-  resourceNames:
-  - {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-node
-  - privileged
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: Role
+# metadata:
+#   name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-node
+# rules:
+# - apiGroups:
+#   - security.openshift.io
+#   resources:
+#   - securitycontextconstraints
+#   verbs:
+#   - use
+#   resourceNames:
+#   - {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-node
+#   - privileged
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-node
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-node
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-node
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-node
 subjects:
 - kind: ServiceAccount
-  name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-node
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-node
 
 ---
 
@@ -70,14 +70,14 @@ subjects:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
 
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
 rules:
 - apiGroups:
   - security.openshift.io
@@ -86,7 +86,7 @@ rules:
   verbs:
   - use
   resourceNames:
-  - {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+  - {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
   - privileged  
   
 
@@ -95,14 +95,14 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
 subjects:
 - kind: ServiceAccount
-  name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
 
 
 ---
@@ -124,7 +124,7 @@ metadata:
   annotations:
     kubernetes.io/description: Custom SCC similar to privilege SCC-HOSTPID/HOSTIPC
     release.openshift.io/create-only: "true"
-  name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
 priority: null
 readOnlyRootFilesystem: false
 requiredDropCapabilities: null
@@ -135,7 +135,7 @@ seLinuxContext:
 supplementalGroups:
   type: RunAsAny
 users:
-- system:serviceaccount:{{.Values.specialresource.spec.namespace}}:{{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+- system:serviceaccount:{{.Values.specialresource.spec.namespace}}:{{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
 volumes:
 - emptyDir
 - secret
@@ -160,7 +160,7 @@ volumes:
 #   annotations:
 #     kubernetes.io/description: Custom SCC similar to privilege SCC-HOSTPID/HOSTIPC
 #     release.openshift.io/create-only: "true"
-#   name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-node
+#   name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-node
 # priority: null
 # readOnlyRootFilesystem: false
 # requiredDropCapabilities: null
@@ -171,7 +171,7 @@ volumes:
 # supplementalGroups:
 #   type: RunAsAny
 # users:
-# - system:serviceaccount:{{.Values.specialresource.spec.namespace}}:{{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-node
+# - system:serviceaccount:{{.Values.specialresource.spec.namespace}}:{{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-node
 # volumes:
 # - hostPath
 # - secret
@@ -259,7 +259,7 @@ roleRef:
   name: {{.Values.specialresource.metadata.name}}-csi-role
 subjects:
 - kind: ServiceAccount
-  name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
   namespace: {{.Values.specialresource.spec.namespace}}
 
   
@@ -345,7 +345,7 @@ roleRef:
   name: {{.Values.specialresource.metadata.name}}-csi-role
 subjects:
 - kind: ServiceAccount
-  name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
   namespace: {{.Values.specialresource.spec.namespace}}
 
 ---
@@ -386,21 +386,21 @@ data:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
   labels:
-    app: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+    app: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
   annotations:
     specialresource.openshift.io/wait: "true"
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+      app: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
   serviceName: "csi-auristorfs"
   template:
     metadata:
       labels:
-        app: {{.Values.specialresource.metadata.namdriverContainerlues.groupName.driverContainer}}-controller
+        app: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-controller
     spec:
       terminationGracePeriodSeconds: {{.Values.csiDriver.terminationGracePeriodSeconds }}
 
