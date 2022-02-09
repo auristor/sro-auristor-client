@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
+rules:
+- apiGroups:
+  - security.openshift.io
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - use
+  resourceNames:
+  - privileged
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
+subjects:
+- kind: ServiceAccount
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
+  annotations:
+    specialresource.openshift.io/wait: "true"
+    specialresource.openshift.io/state: "driver-container"
+    specialresource.openshift.io/driver-container-vendor: auristor-client
+    specialresource.openshift.io/kernel-affine: "true"
+spec:
+  updateStrategy:
+    type: OnDelete
+  selector:
+    matchLabels:
+      app: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
+  template:
+    metadata:
+      # Mark this pod as a critical add-on; when enabled, the critical add-on scheduler
+      # reserves resources for critical add-on pods so that they can be rescheduled after
+      # a failure.  This annotation works in tandem with the toleration below.
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+        kfv: {{ .Values.kernelFullVersion  }}
+      labels:
+        app: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
+    spec:
+      serviceAccount: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
+      serviceAccountName: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
+        # image: alpine
+        image: {{ .Values.csiDriver.auristorRegistry }}/auristor-csi:{{ .Values.csiDriver.auristorCsiVersion }}
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["SYS_ADMIN"]
+          allowPrivilegeEscalation: true
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo K8S: {{ .Values.csiDriver.k8sSigStorageRegistry }} >>/tmp/k8sSigStorageRegistry;
+          echo IMG: {{ .Values.csiDriver.auristorRegistry }}/auristor-csi:{{ .Values.csiDriver.auristorCsiVersion }} >>/tmp/img
+          i=0; 
+          while true; 
+          do 
+            echo "$i: $(date)" >>/tmp/out; 
+            i=$((i+1)); 
+            sleep 1; 
+          done
