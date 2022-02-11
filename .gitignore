@@ -1,2 +1,2 @@
-*.tgz
-cm/
+/charts/*.tgz
+/charts/cm/

@@ -1,27 +1,14 @@
 #!/bin/bash
+
 echo === Deploying Auristor Special Resource ===
 
-echo 1: $1
-
-NAMESPACE=${1:-"auristor-client"}
+NAMESPACE=${NAMESPACE:-"auristor-client"}
 
 echo NAMESPACE: $NAMESPACE
 
-while true ;
-do
-    foo=$( oc get specialresource auristor-client  | wc -l)
-
-    if [ "$foo" -gt "0" ]; then
-        echo waiting for specialresource/auristor-client to terminate
-        sleep 2
-    else
-        break
-    fi
-done
-
 # Create namespace 
-if oc get namespace auristor-client >/dev/null; then
-  echo namespace auristor-client already exists
+if oc get namespace $NAMESPACE >/dev/null; then
+  echo namespace $NAMESPACE already exists
 else
   oc create namespace auristor-client 
 fi 

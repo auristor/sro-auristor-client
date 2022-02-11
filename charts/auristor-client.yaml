@@ -97,7 +97,7 @@ spec:
       nodeSelector: none   
 
 
-      externalVolumeManagerURL: http://volume-manager       ## Default implementation provided
+      externalVolumeManagerURL: http://auristorfs-volume-manager       ## Default implementation provided
 
       logLevel: DEBUG                      # Log level for all components (DEBUG, INFO, WARNING, ERROR, or FATAL)
       flattenLog: "false"                   # Set to true to fold all logging messages to one line (in particular stack traces, though it makes them harder to read)
@@ -120,6 +120,47 @@ spec:
 
       defaultFileServerHost: fs1.example.com
       defaultFileServerPartition: a
+###   Registry and Version Values
+      image:
+        auristorRegistry: ghcr.io/auristor
+        auristorCsiVersion: 2022-02.1
+        csiDriverImagePullPolicy: Always
+        k8sSigStorageRegistry: k8s.gcr.io/sig-storage
+        k8sSigStorageImagePullPolicy: Always
+
+    ###  Cache Manager Values
+      cacheManager:
+        defaultCacheManager: auristor
+        # afsRootDir: "/afs"              # Set to dynamic AFS root (typically /afs) or null if not pre-loaded (ie in OpenShift).  afsRootDir is not used if defaultCacheManager=kafs
+
+    ### Logging Values
+      logging:
+        logLevel: DEBUG                       # Log level for all components (DEBUG, INFO, WARNING, ERROR, or FATAL)
+        flattenLog: "false"                   # Set to true to fold all logging messages to one line (in particular stack traces, though it makes them harder to read)
+
+    ### External Volume Manager Values
+      microServices:
+        externalVolumeManagerURL: http://auristorfs-volume-manager       ## Default implementation provided
+
+      ## ExternalVolumeManager AuristorFS volume status/validation during CSI phase
+      externalVolumeManager:
+        persistentVolumeReadyToCreateValidation: None                 #	None, Exists, or Online
+        persistentVolumeReadyToAttachOntoNodeValidation: None         #	None, Exists, or Online
+        persistentVolumeReadyForFirstConsumerOnNodeValidation: None   #	None, Exists, or Online
+        persistentVolumeReadyToMountOntoPodResponseValidation: None   #	None, Exists, or Online
+
+    # PV naming Values
+      persistentVolumeNaming:
+        volumeNamePrefix: afs              # PV Name Prefix (used by csi-provisioner sidecar)
+
+    # Debugging Values
+      debug:
+        debugging: false            
+        # debugShowCsiRequests: "false"
+        # debugShowMounts: "false"
+        # debugShowExecs: "false"
+        # pvUIDLength: "10"                  # Shortens internal PVHandle name which is useful during debugging
+        # volumeNameUuidLength: ""            # Shortens PV names which is useful during debugging (used by csi-provisioner sidecar)      
 
   driverContainer:
     source:

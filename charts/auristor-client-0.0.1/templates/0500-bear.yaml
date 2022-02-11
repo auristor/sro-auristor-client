@@ -1,3 +1,4 @@
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -16,6 +17,9 @@ rules:
   - use
   resourceNames:
   - privileged
+- apiGroups: ["storage.k8s.io"]
+  resources: ["volumeattachments"]
+  verbs: ["get", "list", "watch", "update", "patch"]  
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -28,7 +32,94 @@ roleRef:
   name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
 subjects:
 - kind: ServiceAccount
+  name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi  
+
+---
+#####################################################################3
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{.Values.specialresource.metadata.name}}-sketchy
+rules:
+- apiGroups: [""]
+  resources: ["persistentvolumes"]
+  verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["get", "list", "watch", "update"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims/status"]
+  verbs: ["patch", "update"]
+- apiGroups: ["snapshot.storage.k8s.io"]
+  resources: ["volumesnapshotclasses"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["snapshot.storage.k8s.io"]
+  resources: ["volumesnapshots"]
+  verbs: ["get", "list", "watch", "update"]
+- apiGroups: ["snapshot.storage.k8s.io"]
+  resources: ["volumesnapshotcontents"]
+  verbs: ["create", "get", "list", "watch", "update", "delete"]
+- apiGroups: ["snapshot.storage.k8s.io"]
+  resources: ["volumesnapshots/status"]
+  verbs: ["update"]
+- apiGroups: ["snapshot.storage.k8s.io"]
+  resources: ["volumesnapshotcontents/status"]
+  verbs: ["update"]
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["storageclasses"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["volumeattachments"]
+  verbs: ["get", "list", "watch", "update", "patch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["list", "watch", "create", "update", "patch", "delete", "get"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["csinodes"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["endpoints"]
+  verbs: ["get", "list", "watch", "create", "update"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["create", "list", "watch", "delete"]
+- apiGroups: ["csi.storage.k8s.io"]
+  resources: ["csidrivers"]
+  verbs: ["create", "delete"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - security.openshift.io
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - use
+  resourceNames:
+  - privileged
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{.Values.specialresource.metadata.name}}-sketchy-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{.Values.specialresource.metadata.name}}-sketchy
+subjects:
+- kind: ServiceAccount
   name: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}-retry-csi
+  namespace: {{.Values.specialresource.spec.namespace}}
+
+
+
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -76,6 +167,7 @@ spec:
         - -c
         - |
           echo K8S: {{ .Values.csiDriver.k8sSigStorageRegistry }} >>/tmp/k8sSigStorageRegistry;
+          echo K8SIMAGE: {{ .Values.csiDriver.image.k8sSigStorageRegistry }} >>/tmp/k8sSigStorageRegistry;          
           echo IMG: {{ .Values.csiDriver.auristorRegistry }}/auristor-csi:{{ .Values.csiDriver.auristorCsiVersion }} >>/tmp/img
           i=0; 
           while true; 
@@ -84,3 +176,782 @@ spec:
             i=$((i+1)); 
             sleep 1; 
           done
+
+##################################
+##################################
+##################################
+##################################
+##################################
+##################################
+##################################
+##################################
+##################################
+##################################
+##################################
+##################################
+##################################
+##################################
+##################################
+---
+####################################
+###    Auristor CSI Controller   ###
+####################################
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auristorfs-csi-controller-config
+  namespace: {{.Values.specialresource.spec.namespace}}
+data:
+
+  externalVolumeManagerURL: {{ .Values.csiDriver.microServices.externalVolumeManagerURL }}   
+  defaultCacheManager: {{ .Values.csiDriver.cacheManager.defaultCacheManager }}    # kafs or auristor
+
+  logLevel: {{ .Values.csiDriver.logging.logLevel | default "INFO" | quote }}  
+  flattenLog: {{ .Values.csiDriver.logging.flattenLog | default "false" | quote }}  
+  
+  # Debugging Values
+  pvUIDLength: {{ .Values.csiDriver.debug.pvUIDLength | default "10" | quote }} 
+  debugShowCsiRequests: {{ .Values.csiDriver.debug.debugShowCsiRequests | default "false" | quote }} 
+  debugShowMounts: {{ .Values.csiDriver.debug.debugShowMounts | default "false" | quote }} 
+  debugShowExecs: {{ .Values.csiDriver.debug.debugShowExecs | default "false" | quote }} 
+
+---
+
+apiVersion: storage.k8s.io/v1
+kind: CSIDriver
+metadata:
+ name: auristorfs.csi.auristor.com
+spec:
+  volumeLifecycleModes:
+  - Persistent
+  - Ephemeral
+  podInfoOnMount: true
+  attachRequired: true
+
+---
+
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: auristorfs-csi-controller
+  namespace: {{.Values.specialresource.spec.namespace}}
+spec:
+  serviceName: auristorfs-csi-svc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auristorfs-csi-controller
+  template:
+    metadata:
+      labels:
+        app: auristorfs-csi-controller
+    spec:
+      serviceAccountName: auristorfs-csi
+      priorityClassName: system-cluster-critical
+      terminationGracePeriodSeconds: 3
+      containers:
+      
+        - name: controller
+          image: {{ .Values.csiDriver.image.auristorRegistry }}/auristorfs-csi:{{ .Values.csiDriver.image.auristorCsiVersion }}
+          imagePullPolicy: {{ .Values.csiDriver.image.csiDriverImagePullPolicy | quote }}
+          securityContext:
+            privileged: true
+
+          envFrom: 
+          - configMapRef:
+              name: auristorfs-csi-controller-config
+          env:
+            - name: SERVICE_TYPE
+              value: "Controller"              
+            - name: KUBERNETES_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: CSI_DOMAIN_SOCKET
+              value: "/csi/csi.sock"
+          ports:
+          # - containerPort: 9898
+          #   name: healthz
+          #   protocol: TCP
+          # livenessProbe:                  # TODO - Implement later
+          #   failureThreshold: 10
+          #   httpGet:
+          #     path: /healthz
+          #     port: healthz
+          #   initialDelaySeconds: 10
+          #   timeoutSeconds: 3
+          #   periodSeconds: 2
+
+          volumeMounts:
+
+            - mountPath: /csi
+              name: controller-socket-dir
+            
+            {{ if .Values.csiDriver.cacheManager.afsRootDir }}
+            - mountPath: /root/afs
+              name: afs-root
+            {{ end }}
+              
+            - mountPath: /root/appVar
+              name: app-var
+
+        - name: csi-attacher
+          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/csi-attacher:v3.4.0
+          imagePullPolicy: {{ .Values.csiDriver.image.k8sSigStorageImagePullPolicy | quote }}
+          securityContext:
+            privileged: true          
+          args:
+            - --v=5
+            - --csi-address=/csi/csi.sock
+          volumeMounts:
+          - mountPath: /csi
+            name: controller-socket-dir   
+            
+        - name: csi-provisioner
+          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/csi-provisioner:v3.1.0
+          imagePullPolicy: {{ .Values.csiDriver.image.k8sSigStorageImagePullPolicy | quote }}
+          args:
+            - -v=5
+            - --csi-address=/csi/csi.sock
+            - --volume-name-prefix={{ .Values.csiDriver.persistentVolumeNaming.volumeNamePrefix}}
+            {{- if .Values.csiDriver.debug.volumeNameUuidLength }}
+            - --volume-name-uuid-length={{ .Values.csiDriver.debug.volumeNameUuidLength}} # DEBUG/TESTING ONLY -  Small value during testing/debugging, otherwise comment/remove arg
+            {{ end }}
+            - --extra-create-metadata=true # Include of PVC, PVC-Namespace and PV to be included in Controller.CreateVolume parameteters
+
+          volumeMounts:
+            - mountPath: /csi
+              name: controller-socket-dir   
+
+        - name: liveness-probe
+          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/livenessprobe:v2.5.0
+          imagePullPolicy: {{ .Values.csiDriver.image.k8sSigStorageImagePullPolicy | quote }}
+          securityContext:
+            privileged: true              
+          args:
+            - --csi-address=/csi/csi.sock
+            - --probe-timeout=3s
+            - --health-port=9898
+          volumeMounts:
+          - mountPath: /csi
+            name: controller-socket-dir               
+
+      volumes:
+        - name: controller-socket-dir
+          emptyDir: {}
+          
+        {{ if .Values.csiDriver.cacheManager.afsRootDir }}
+        - name: afs-root
+          hostPath:
+            path: /afs 
+        {{ end }}
+
+        - name: app-var
+          configMap:
+            name: auristorfs-csi-node-config            
+##################---##########################
+---
+####################################
+###       Auristor CSI Node      ###
+####################################
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auristorfs-csi-node-config
+  namespace: {{.Values.specialresource.spec.namespace}}
+data:
+  
+  externalVolumeManagerURL: {{ .Values.csiDriver.microServices.externalVolumeManagerURL }}   
+  defaultCacheManager: {{ .Values.csiDriver.cacheManager.defaultCacheManager }}    # kafs or auristor
+
+  logLevel: {{ .Values.csiDriver.logging.logLevel | default "INFO" | quote }}  
+  flattenLog: {{ .Values.csiDriver.logging.flattenLog | default "false" | quote }}  
+
+  # Debugging Values
+  debugShowCsiRequests: {{ .Values.csiDriver.debug.debugShowCsiRequests | default "false" | quote }} 
+  debugShowMounts: {{ .Values.csiDriver.debug.debugShowMounts | default "false" | quote }} 
+  debugShowExecs: {{ .Values.csiDriver.debug.debugShowExecs | default "false" | quote }} 
+
+---
+
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: auristorfs-csi-node
+  namespace: {{.Values.specialresource.spec.namespace}}
+spec:
+  selector:
+    matchLabels:
+      app: auristorfs-csi-node
+  template:
+    metadata:
+      labels:
+        app: auristorfs-csi-node
+    spec:
+      serviceAccountName: auristorfs-csi
+      priorityClassName: system-cluster-critical
+      terminationGracePeriodSeconds: 3
+      containers:
+
+        - name: node
+          image: {{ .Values.csiDriver.image.auristorRegistry }}/auristorfs-csi:{{ .Values.csiDriver.image.auristorCsiVersion }}
+          imagePullPolicy: {{ .Values.csiDriver.image.csiDriverImagePullPolicy | quote }}
+          envFrom: 
+          - configMapRef:
+              name: auristorfs-csi-node-config         
+          env:
+            - name: SERVICE_TYPE
+              value: "Node"              
+            - name: KUBERNETES_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: CSI_DOMAIN_SOCKET
+              value: "/csi/csi.sock"
+          securityContext:
+            privileged: true
+          # ports:
+          # - containerPort: 9888
+          #   name: healthz
+          #   protocol: TCP
+          # livenessProbe:              # TODO - implement this later
+          #   failureThreshold: 5
+          #   httpGet:
+          #     path: /healthz
+          #     port: healthz
+          #   initialDelaySeconds: 10
+          #   timeoutSeconds: 3
+          #   periodSeconds: 2
+          
+          volumeMounts:
+
+            - name: node-socket-dir
+              mountPath: /csi
+
+            - name: volume-mountpoint-dir
+              mountPath: /var/lib/kubelet/pods
+              mountPropagation: Bidirectional
+
+            {{ if .Values.csiDriver.cacheManager.afsRootDir }}
+            - name: afs-root
+              mountPath: /root/afs
+            {{ end }}
+
+            - name: app-var
+              mountPath: /root/appVar
+
+        - name: node-driver-registrar
+          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/csi-node-driver-registrar:v2.4.0
+          imagePullPolicy: {{ .Values.csiDriver.image.k8sSigStorageImagePullPolicy | quote }}
+          securityContext:
+            privileged: true
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "rm -rf /registration/csi.auristor.com           /registration/csi.auristor.com-reg.sock"]
+          args:
+          - --v=5
+          - --csi-address=/csi/csi.sock
+          - --kubelet-registration-path=/var/lib/kubelet/plugins/csi.auristor.com/csi.sock
+          env:
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          volumeMounts:
+          - name: node-socket-dir
+            mountPath: /csi
+          - name: registration-dir
+            mountPath: /registration/            
+
+        - name: liveness-probe
+          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/livenessprobe:v2.5.0
+          imagePullPolicy: {{ .Values.csiDriver.image.k8sSigStorageImagePullPolicy | quote }}
+          securityContext:
+            privileged: true          
+          args:
+            - --csi-address=/csi/csi.sock
+            - --probe-timeout=3s
+            - --health-port=9898
+          volumeMounts:
+          - mountPath: /csi
+            name: node-socket-dir        
+             
+      volumes:
+
+        - name: registration-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins_registry
+            type: Directory
+
+        - name: node-socket-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/csi.auristor.com
+            type: DirectoryOrCreate
+
+        - name: volume-mountpoint-dir
+          hostPath:
+            path: /var/lib/kubelet/pods
+            type: Directory
+            
+        {{ if .Values.csiDriver.cacheManager.afsRootDir }}
+        - name: afs-root
+          hostPath:
+            path: {{ .Values.csiDriver.cacheManager.afsRootDir }}
+            type: Directory
+        {{ end }}
+
+        - name: app-var
+          configMap:
+            name: auristorfs-csi-node-config
+       
+##################---##########################
+---
+#######################################
+### Auristor CSI Roles and Bindings ###
+#######################################
+
+####################################
+### Auristor CSI ControllerRoles ###
+####################################
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-cr
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]    
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["*"]
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-r
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]    
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    verbs: ["get", "list", "watch"]    
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["*"]         
+
+---
+##################################
+### External Provisioner Roles ###
+##################################
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-provisioner-cr
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots"]
+    verbs: ["get", "list"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents"]
+    verbs: ["get", "list"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]        
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch"]
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-provisioner-r
+rules:
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "watch", "list", "delete", "update", "create"]
+# Permissions for CSIStorageCapacity are only needed enabling the publishing
+# of storage capacity information.
+- apiGroups: ["storage.k8s.io"]
+  resources: ["csistoragecapacities"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+# The GET permissions below are needed for walking up the ownership chain
+# for CSIStorageCapacity. They are sufficient for deployment via
+# StatefulSet (only needs to get Pod) and Deployment (needs to get
+# Pod and then ReplicaSet to find the Deployment).
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get"]
+- apiGroups: ["apps"]
+  resources: ["replicasets"]
+  verbs: ["get"]  
+
+---
+#################################
+###  External Attacher Roles  ###
+#################################
+
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-attacher-cr
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments/status"]
+    verbs: ["patch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-attacher-r
+rules:
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "watch", "list", "delete", "update", "create"]
+
+---
+##################################
+### External Snapshotter Roles ###
+##################################
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-snapshotter-cr
+rules:
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents"]
+    verbs: ["create", "get", "list", "watch", "update", "delete"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents/status"]
+    verbs: ["update"]
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-snapshotter-r
+rules:
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "watch", "list", "delete", "update", "create"]
+
+---
+################################
+###  External Resizer Roles  ###
+################################
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-resizer-cr
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims/status"]
+    verbs: ["update", "patch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-resizer-r
+rules:
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "watch", "list", "delete", "update", "create"]
+
+---
+##################################
+### Controller Service Account ###
+##################################
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: auristorfs-csi
+
+---
+##################################
+###  Controller Role Bindings  ###
+##################################
+
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-provisioner-rb
+subjects:
+  - kind: ServiceAccount
+    name: auristorfs-csi
+    namespace: {{.Values.specialresource.spec.namespace}}
+roleRef:
+  kind: Role
+  name: auristorfs-csi-external-provisioner-r
+  apiGroup: rbac.authorization.k8s.io
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-provisioner-crb
+subjects:
+  - kind: ServiceAccount
+    name: auristorfs-csi
+    namespace: {{.Values.specialresource.spec.namespace}}
+roleRef:
+  kind: ClusterRole
+  name: auristorfs-csi-external-provisioner-cr
+  apiGroup: rbac.authorization.k8s.io  
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-attacher-crb
+subjects:
+  - kind: ServiceAccount
+    name: auristorfs-csi
+    namespace: {{.Values.specialresource.spec.namespace}}
+roleRef:
+  kind: ClusterRole
+  name: auristorfs-csi-external-attacher-cr
+  apiGroup: rbac.authorization.k8s.io
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-attacher-role-rb
+subjects:
+  - kind: ServiceAccount
+    name: auristorfs-csi
+    namespace: {{.Values.specialresource.spec.namespace}}
+roleRef:
+  kind: Role
+  name: auristorfs-csi-external-attacher-r
+  apiGroup: rbac.authorization.k8s.io 
+
+  
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-snapshotter-crb
+subjects:
+  - kind: ServiceAccount
+    name: auristorfs-csi
+    namespace: {{.Values.specialresource.spec.namespace}}
+roleRef:
+  kind: ClusterRole
+  # change the name also here if the ClusterRole gets renamed
+  name: auristorfs-csi-external-snapshotter-cr
+  apiGroup: rbac.authorization.k8s.io
+
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-snapshotter-rb
+subjects:
+  - kind: ServiceAccount
+    name: auristorfs-csi
+    namespace: {{.Values.specialresource.spec.namespace}}
+roleRef:
+  kind: Role
+  name: auristorfs-csi-external-snapshotter-r
+  apiGroup: rbac.authorization.k8s.io
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-rb
+subjects:
+  - kind: ServiceAccount
+    name: auristorfs-csi
+    namespace: {{.Values.specialresource.spec.namespace}}
+roleRef:
+  kind: Role
+  name: auristorfs-csi-r
+  apiGroup: rbac.authorization.k8s.io
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-crb
+subjects:
+  - kind: ServiceAccount
+    name: auristorfs-csi
+    namespace: {{.Values.specialresource.spec.namespace}}
+roleRef:
+  kind: ClusterRole
+  name: auristorfs-csi-cr
+  apiGroup: rbac.authorization.k8s.io  
+
+##################---##########################
+---
+####################################
+###    Auristor Volume Manager   ###
+####################################
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: auristorfs-volume-manager
+  labels:
+    app: auristorfs-volume-manager
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    name: auristorfs-api
+  selector:
+    app: auristorfs-volume-manager
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auristorfs-volume-manager-config
+data:
+  defaultCacheManager: "auristor"
+  apiServerPort: "80"
+
+  logLevel: {{ .Values.csiDriver.logging.logLevel | default "INFO" | quote }}  
+  flattenLog: {{ .Values.csiDriver.logging.flattenLog | default "false" | quote }}  
+  
+  # Debugging Values
+  debugShowMounts: {{ .Values.csiDriver.debug.debugShowMounts | default "false" | quote }} 
+  debugShowExecs: {{ .Values.csiDriver.debug.debugShowExecs | default "false" | quote }} 
+
+  # Debugging Values
+  persistentVolumeReadyToCreateValidation: {{ .Values.csiDriver.externalVolumeManager.persistentVolumeReadyToCreateValidation | default "None" | quote }} 
+  persistentVolumeReadyToAttachOntoNodeValidation: {{ .Values.csiDriver.externalVolumeManager.persistentVolumeReadyToAttachOntoNodeValidation | default "None" | quote }} 
+  persistentVolumeReadyForFirstConsumerOnNodeValidation: {{ .Values.csiDriver.externalVolumeManager.persistentVolumeReadyForFirstConsumerOnNodeValidation | default "None" | quote }} 
+  persistentVolumeReadyToMountOntoPodResponseValidation: {{ .Values.csiDriver.externalVolumeManager.persistentVolumeReadyToMountOntoPodResponseValidation | default "None" | quote }} 
+
+---
+
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: auristorfs-api
+spec:
+  serviceName: auristorfs-csi-svc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auristorfs-volume-manager
+  template:
+    metadata:
+      labels:
+        app: auristorfs-volume-manager
+    spec:
+      serviceAccountName: auristorfs-csi
+      priorityClassName: system-cluster-critical
+      terminationGracePeriodSeconds: 3
+      containers:             
+        - name: auristorfs-volume-manager
+          image: {{ .Values.csiDriver.image.auristorRegistry }}/auristorfs-csi:{{ .Values.csiDriver.image.auristorCsiVersion }}
+          imagePullPolicy: {{ .Values.csiDriver.image.csiDriverImagePullPolicy | quote }}
+          securityContext:
+            privileged: true
+          envFrom: 
+          - configMapRef:
+              name: auristorfs-volume-manager-config
+          env:
+            - name: VOLUME_MANAGER
+              value: "true"
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          ports:
+          - containerPort: 8080
+            name: auristorfs-api
+      
+            protocol: TCP
+          # - containerPort: 9898
+          #   name: healthz
+          #   protocol: TCP

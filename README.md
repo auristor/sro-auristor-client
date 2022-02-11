@@ -24,7 +24,26 @@
 * Add Defaults as a subchart: https://helm.sh/docs/topics/charts/#schema-files
 
 
+# Original Docs below... under "The AuriStor SRO Client"
 
+## BUILD
+
+```
+echo == Repackage Helm script for deployable yaml objects ===
+
+cd charts
+
+# Create ./auristor-client-0.0.1.tgz
+helm package auristor-client-0.0.1
+
+# Copy Helm Chart into ConfigMap (cm) directory
+mkdir -p cm
+cp auristor-client-0.0.1.tgz cm/auristor-client-0.0.1.tgz
+
+# Create an index file specifying the Helm repo that contains the Helm chart
+helm repo index cm --url=cm://auristor-client/auristor-client-chart
+
+```
 
 # The AuriStor SRO Client
 

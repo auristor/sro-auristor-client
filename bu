@@ -1,5 +1,0 @@
-TARGET=$GP/tmp/bu/$1
-
-mkdir $TARGET
-cp charts/auristor-client-0.0.1/templates/* $TARGET
-cp charts/auristor-client.yaml $TARGET
