@@ -2,22 +2,7 @@
 
 echo === Undeploying Auristor Special Resource ===
 
-NAMESPACE=${1:-"auristor-client"}
-
 oc delete specialresource auristor-client --ignore-not-found=true
-oc delete cm  -n $NAMESPACE auristor-client-chart --ignore-not-found=true
-
-while true ;
-do
-    oc get specialresource auristor-client --ignore-not-found=true
-
-    if [ "$?" -ne 0 ]; then
-        echo waiting for specialresource/auristor-client to terminate
-        sleep 2
-    else
-        break
-    fi
-
-done
+oc delete cm  -n auristor-xyz auristor-client-chart --ignore-not-found=true
 
 
