@@ -1,5 +1,2 @@
 /charts/cm/
-/charts/*.tgz
-charts/*.tgz
-charts/charts/auristor-client-0.0.1.tgz
-/charts/charts/auristor-client-0.0.1.tgz
+*.tgz
