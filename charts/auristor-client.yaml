@@ -18,11 +18,7 @@ spec:
     kind: Values
     apiVersion: sro.openshift.io/v1beta1
     kmodNames: ["yfs"]
-    auristorRegistry: "ghcr.io/auristor"
-    auristorVersion: "2021.05-15"
-    
-    runArgs:
-      platform: "openshift-container-platform"
+      
     kmodDriverContainer:
       auristorRegistry: "ghcr.io/auristor"
       auristorKmodVersion: "2021.05-15"
@@ -86,41 +82,8 @@ spec:
                     }
 
     csiDriver:
-      auristorCsiVersion: 2022-02.1
-      csiDriverImage: ghcr.io/auristor/auristor-csi:2022-02.1
-      csiDriverImagePullPolicy: Always
-      k8sSigStorageRegistry: k8s.gcr.io/sig-storage
-      auristorRegistry: ghcr.io/auristor
 
-      defaultCacheManager: auristor
-      afsRootDir: null
-      nodeSelector: none   
-
-
-      externalVolumeManagerURL: http://auristorfs-volume-manager       ## Default implementation provided
-
-      logLevel: DEBUG                      # Log level for all components (DEBUG, INFO, WARNING, ERROR, or FATAL)
-      flattenLog: "false"                   # Set to true to fold all logging messages to one line (in particular stack traces, though it makes them harder to read)
-
-      ## Validate AuristorFS volume status during CSI phase
-      controllerCreateVolumeValidation: None    # 	None, Exists, or Online
-      controllerPublishVolumeValidation: None   # 	None, Exists, or Online
-      nodeStageVolumeValidation: None           # 	None, Exists, or Online
-      nodePublishVolumeValidation: None         # 	None, Exists, or Online
-
-      # Values which affect PV and volumeHandle names
-      volumeNamePrefix: afs              # PV Name Prefix
-      volumeNameUuidLength: "-1"         # Shortens PV names which is useful during debugging
-      pvUIDLength: "10"                  # Shortens internal PVHandle name which is useful during debugging
-
-      # Debugging Options
-      debugShowCsiRequests: "false"
-      debugShowMounts: "true"
-      debugShowExecs: "true"
-
-      defaultFileServerHost: fs1.example.com
-      defaultFileServerPartition: a
-###   Registry and Version Values
+      ###   Registry and Version Values
       image:
         auristorRegistry: ghcr.io/auristor
         auristorCsiVersion: 2022-02.1
@@ -128,17 +91,17 @@ spec:
         k8sSigStorageRegistry: k8s.gcr.io/sig-storage
         k8sSigStorageImagePullPolicy: Always
 
-    ###  Cache Manager Values
+      ###  Cache Manager Values
       cacheManager:
         defaultCacheManager: auristor
         # afsRootDir: "/afs"              # Set to dynamic AFS root (typically /afs) or null if not pre-loaded (ie in OpenShift).  afsRootDir is not used if defaultCacheManager=kafs
 
-    ### Logging Values
+      ### Logging Values
       logging:
         logLevel: DEBUG                       # Log level for all components (DEBUG, INFO, WARNING, ERROR, or FATAL)
         flattenLog: "false"                   # Set to true to fold all logging messages to one line (in particular stack traces, though it makes them harder to read)
 
-    ### External Volume Manager Values
+      ### External Volume Manager Values
       microServices:
         externalVolumeManagerURL: http://auristorfs-volume-manager       ## Default implementation provided
 
@@ -149,11 +112,11 @@ spec:
         persistentVolumeReadyForFirstConsumerOnNodeValidation: None   #	None, Exists, or Online
         persistentVolumeReadyToMountOntoPodResponseValidation: None   #	None, Exists, or Online
 
-    # PV naming Values
+      # PV naming Values
       persistentVolumeNaming:
         volumeNamePrefix: afs              # PV Name Prefix (used by csi-provisioner sidecar)
 
-    # Debugging Values
+      # Debugging Values
       debug:
         debugging: false            
         # debugShowCsiRequests: "false"
@@ -161,15 +124,3 @@ spec:
         # debugShowExecs: "false"
         # pvUIDLength: "10"                  # Shortens internal PVHandle name which is useful during debugging
         # volumeNameUuidLength: ""            # Shortens PV names which is useful during debugging (used by csi-provisioner sidecar)      
-
-  driverContainer:
-    source:
-      git:
-        # uri: "https://github.com/GerrySeidman/kvc-auristor-client.git"
-        # ref: "fixing-repo"
-        uri: "https://github.com/dariaphoebe/kvc-auristor-client.git"
-        ref: "main"
-    # artifacts:
-    #   hostpaths:
-    #     - sourcePath: "/tmp/sro-artifact"
-    #     - destinationDir: "/tmp/sro-artifact"

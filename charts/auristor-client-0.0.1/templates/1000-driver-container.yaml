@@ -66,7 +66,7 @@ spec:
         {{- $kfvSplit := splitList   "." .Values.kernelFullVersion  }}
         {{- $elVersionSplit :=  index $kfvSplit 5 | splitList "_"}}
 
-        image: {{ .Values.auristorRegistry }}/auristor-kmod-{{ .Values.auristorVersion }}:
+        image: {{ .Values.kmodDriverContainer.auristorRegistry }}/auristor-kmod-{{ .Values.kmodDriverContainer.auristorKmodVersion }}:
                       {{- index $kfvSplit 0 -}}.{{- index $kfvSplit 1 -}}.{{- index $kfvSplit 2 -}}.
                       {{- index $elVersionSplit 0 -}}.{{- index $kfvSplit 6 }}      
         
