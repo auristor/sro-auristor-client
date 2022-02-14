@@ -1,5 +1,14 @@
+###### auristor CSI Driver Chart #####
 
 
+
+#################################################
+### FROM FILE: templates/controller.yaml 
+#################################################
+
+{{- if ne .Values.runArgs.platform "openshift-container-platform" }}
+---
+{{ end }}
 ####################################
 ###    Auristor CSI Controller   ###
 ####################################
@@ -8,20 +17,26 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: auristorfs-csi-controller-config
-  namespace: {{.Values.specialresource.spec.namespace}}
 data:
+  {{ if .Values.csiDriver.microServices }}
   externalVolumeManagerURL: {{ .Values.csiDriver.microServices.externalVolumeManagerURL }}   
+  {{ else }}
+  externalVolumeManagerURL: "http://auristorfs-volume-manager"  
+  {{ end }}
+
   defaultCacheManager: {{ .Values.csiDriver.cacheManager.defaultCacheManager }}    # kafs or auristor
 
   logLevel: {{ .Values.csiDriver.logging.logLevel | default "INFO" | quote }}  
   flattenLog: {{ .Values.csiDriver.logging.flattenLog | default "false" | quote }}  
   
+
+  {{ if .Values.csiDriver.debug }}
   # Debugging Values
   pvUIDLength: {{ .Values.csiDriver.debug.pvUIDLength | default "10" | quote }} 
   debugShowCsiRequests: {{ .Values.csiDriver.debug.debugShowCsiRequests | default "false" | quote }} 
   debugShowMounts: {{ .Values.csiDriver.debug.debugShowMounts | default "false" | quote }} 
   debugShowExecs: {{ .Values.csiDriver.debug.debugShowExecs | default "false" | quote }} 
-
+  {{ end }}
 ---
 
 apiVersion: storage.k8s.io/v1
@@ -41,7 +56,6 @@ kind: StatefulSet
 apiVersion: apps/v1
 metadata:
   name: auristorfs-csi-controller
-  namespace: {{.Values.specialresource.spec.namespace}}
 spec:
   serviceName: auristorfs-csi-svc
   replicas: 1
@@ -121,9 +135,15 @@ spec:
           args:
             - -v=5
             - --csi-address=/csi/csi.sock
+            {{- if .Values.csiDriver.persistentVolumeNaming }}
+            {{- if .Values.csiDriver.persistentVolumeNaming.volumeNamePrefix }}
             - --volume-name-prefix={{ .Values.csiDriver.persistentVolumeNaming.volumeNamePrefix}}
+            {{ end }}
+            {{ end }}
+            {{- if .Values.csiDriver.debug }}
             {{- if .Values.csiDriver.debug.volumeNameUuidLength }}
             - --volume-name-uuid-length={{ .Values.csiDriver.debug.volumeNameUuidLength}} # DEBUG/TESTING ONLY -  Small value during testing/debugging, otherwise comment/remove arg
+            {{ end }}
             {{ end }}
             - --extra-create-metadata=true # Include of PVC, PVC-Namespace and PV to be included in Controller.CreateVolume parameteters
 
@@ -157,7 +177,13 @@ spec:
         - name: app-var
           configMap:
             name: auristorfs-csi-node-config            
-##################---##########################
+
+
+
+#################################################
+### FROM FILE: templates/node.yaml 
+#################################################
+
 ---
 ####################################
 ###       Auristor CSI Node      ###
@@ -167,27 +193,30 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: auristorfs-csi-node-config
-  namespace: {{.Values.specialresource.spec.namespace}}
 data:
-  
+  {{ if .Values.csiDriver.microServices }}
   externalVolumeManagerURL: {{ .Values.csiDriver.microServices.externalVolumeManagerURL }}   
+  {{ else }}
+  externalVolumeManagerURL: "http://auristorfs-volume-manager"  
+  {{ end }}
+   
   defaultCacheManager: {{ .Values.csiDriver.cacheManager.defaultCacheManager }}    # kafs or auristor
 
   logLevel: {{ .Values.csiDriver.logging.logLevel | default "INFO" | quote }}  
   flattenLog: {{ .Values.csiDriver.logging.flattenLog | default "false" | quote }}  
 
+  {{ if .Values.csiDriver.debug }}
   # Debugging Values
   debugShowCsiRequests: {{ .Values.csiDriver.debug.debugShowCsiRequests | default "false" | quote }} 
   debugShowMounts: {{ .Values.csiDriver.debug.debugShowMounts | default "false" | quote }} 
   debugShowExecs: {{ .Values.csiDriver.debug.debugShowExecs | default "false" | quote }} 
-
+  {{ end }}
 ---
 
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
   name: auristorfs-csi-node
-  namespace: {{.Values.specialresource.spec.namespace}}
 spec:
   selector:
     matchLabels:
@@ -316,7 +345,13 @@ spec:
           configMap:
             name: auristorfs-csi-node-config
        
-##################---##########################
+
+
+
+#################################################
+### FROM FILE: templates/roles-and-bindings.yaml 
+#################################################
+
 ---
 #######################################
 ### Auristor CSI Roles and Bindings ###
@@ -672,7 +707,13 @@ roleRef:
   name: auristorfs-csi-cr
   apiGroup: rbac.authorization.k8s.io  
 
-##################---##########################
+
+
+
+#################################################
+### FROM FILE: templates/volumeManager.yaml 
+#################################################
+
 ---
 ####################################
 ###    Auristor Volume Manager   ###
@@ -706,16 +747,19 @@ data:
   logLevel: {{ .Values.csiDriver.logging.logLevel | default "INFO" | quote }}  
   flattenLog: {{ .Values.csiDriver.logging.flattenLog | default "false" | quote }}  
   
+  {{ if .Values.csiDriver.debug }}
   # Debugging Values
   debugShowMounts: {{ .Values.csiDriver.debug.debugShowMounts | default "false" | quote }} 
   debugShowExecs: {{ .Values.csiDriver.debug.debugShowExecs | default "false" | quote }} 
+  {{ end }}
 
   # Debugging Values
+  {{ if .Values.csiDriver.externalVolumeManager }}
   persistentVolumeReadyToCreateValidation: {{ .Values.csiDriver.externalVolumeManager.persistentVolumeReadyToCreateValidation | default "None" | quote }} 
   persistentVolumeReadyToAttachOntoNodeValidation: {{ .Values.csiDriver.externalVolumeManager.persistentVolumeReadyToAttachOntoNodeValidation | default "None" | quote }} 
   persistentVolumeReadyForFirstConsumerOnNodeValidation: {{ .Values.csiDriver.externalVolumeManager.persistentVolumeReadyForFirstConsumerOnNodeValidation | default "None" | quote }} 
   persistentVolumeReadyToMountOntoPodResponseValidation: {{ .Values.csiDriver.externalVolumeManager.persistentVolumeReadyToMountOntoPodResponseValidation | default "None" | quote }} 
-
+  {{ end }}
 ---
 
 kind: StatefulSet
@@ -764,13 +808,12 @@ spec:
 
 
 
+#################################################
+### FROM FILE: templates/sroPermissions.yaml 
+#################################################
 
 
-
-
-
-
-
+{{- if eq .Values.runArgs.platform "openshift-container-platform" }}
 ---
 ####################################
 ###     SRO Extra Permissions    ###
@@ -811,3 +854,4 @@ volumes:
 - hostPath
 - secret  
 - configMap
+{{ end }}

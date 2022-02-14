@@ -2,7 +2,7 @@
 
 echo === Deploying Auristor Special Resource ===
 
-oc get namespace auristor-xyz >> /dev/null
+oc get namespace auristorfs-client >> /dev/null
 
  if [ "$?" -ne 0 ]; then
   echo ERROR: Namespace does not exists, not deploying SpecialResource
@@ -10,7 +10,6 @@ oc get namespace auristor-xyz >> /dev/null
 fi 
 
 # Create ConfigMap object
-oc delete -n auristor-xyz cm auristor-client-chart --ignore-not-found=true
-oc create -n auristor-xyz cm auristor-client-chart --from-file=charts/cm/index.yaml --from-file=charts/cm/auristor-client-0.0.1.tgz 
+oc create -n auristorfs-client cm auristor-client-chart --from-file=charts/cm/index.yaml --from-file=charts/cm/auristor-client-0.0.1.tgz 
 
 oc create -f charts/auristor-client.yaml

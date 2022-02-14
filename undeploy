@@ -3,6 +3,6 @@
 echo === Undeploying Auristor Special Resource ===
 
 oc delete specialresource auristor-client --ignore-not-found=true
-oc delete cm  -n auristor-xyz auristor-client-chart --ignore-not-found=true
+oc delete cm -n auristorfs-client auristor-client-chart --ignore-not-found=true
 
 

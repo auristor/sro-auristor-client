@@ -100,7 +100,7 @@ spec:
         volumeMounts:
         - name: yfs-cache
           mountPath: /var/cache/yfs
-          {{- range .Values.kmodDriverContainer.directories }}
+          {{- range .Values.kmodDriverContainer.mapVolumes }}
         - name: {{ .label }}
           mountPath: {{ .target }}
           {{ end }}
@@ -112,14 +112,14 @@ spec:
       - name: yfs-cache
         hostPath: 
           path: {{ .Values.kmodDriverContainer.yfsCache }}
-      {{- range .Values.kmodDriverContainer.directories }}
+      {{- range .Values.kmodDriverContainer.mapVolumes }}
       - name: {{ .label }}
         configMap: 
           name: {{ .label }}
         {{ end }}  
 
 
-{{- range .Values.kmodDriverContainer.directories }}
+{{- range .Values.kmodDriverContainer.mapVolumes }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -129,5 +129,4 @@ data:
   {{- range $k, $v := .files }}
   {{ $k }}: |{{ $v }}
   {{ end }}
-  ace: Venture
 {{ end }}

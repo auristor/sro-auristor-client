@@ -1,15 +1,3 @@
-# TO DO Items
-## For Gerry To do 
-- Secrets
-- Other than Inline Configmaps and Secretes
-- Namespaces other than auristor-xyz (Refactor Build Scripts, create into /build)
-- Better handle 'hidden' defaults (ie without needing to show them in values.yaml)
-
-## Questions fro SRO Team
-- How to do updates without shutting down cluster
-- What happens if pod failing on one node prevents next stage (wait false?)
-- How to do rolling updates 
-
 
 # The AuriStorfs KMOD/CSI Special Resource 
 
@@ -29,20 +17,6 @@ The kernel modules and CSI drivers are installed and managed utilizing the [Spec
 
  SRO contains an internal embedded Helm engine. The primary components of a SpecialResource objects is a reference to a Helm Script along with values to be made available to the 
 
-----
-
-
-The examples in this section use the simple-kmod kernel module to demonstrate how to use the SRO to build and run a driver container. 
-
-In the first example, the SRO image contains a local repository of Helm charts including the templates for deploying the simple-kmod kernel module. 
-
-In this case, a SpecialResource manifest is used to deploy the driver container. 
-
-In the second example, the simple-kmod SpecialResource object points to a ConfigMap object that is created to store the Helm charts.
-
-[Using a ConfigMap](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-special-resource-operator.html#deploy-simple-kmod-using-configmap-chart)
-
----
 
 
 ## Installing OpenShift Special Resource Operator
@@ -54,63 +28,91 @@ The Special Resource Operator (SRO) and Node Feature Discovery Operator (NFD) mu
 
 - [OpenShift SRO Documentation](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-special-resource-operator.html#installing-special-resource-operator)
 
+## Configuring the AuriStor KMOD/CSI Special Resource
+
+The AuriStorFS KMOD/CSI Special Resource configuration is found in  [charts/auristor-client.yaml](charts/auristor-client.yaml)  
+
+The Special Resource Operator has an embedded helm engine which generates then 'helm Values' by integrating information provided by the NFD Operator along with Special Resource specific values.  The 'Values' sent to this internal engine are synthesized by integrating NFD values along with values found in the 'set' section of the Special Resource Object. There is a separate block of values for the **kmodDriverContainer** and the **csiDriver** 
+
+AuriStorFS KMOD/SRO Configuration file: [charts/auristor-client.yaml](charts/auristor-client.yaml)
+
+      apiVersion: sro.openshift.io/v1beta1
+      kind: SpecialResource
+      metadata:
+      name: auristor-client
+      spec:
+      namespace: auristorfs-client
+
+      chart:
+      name: auristor-client
+      version: 0.0.1
+      repository:
+         name: example
+         url: cm://auristorfs-client/auristor-client-chart
+         
+      set:
+         kind: Values
+         apiVersion: sro.openshift.io/v1beta1
+         kmodNames: ["yfs"]
+
+         runArgs:
+            platform: "openshift-container-platform"
+               
+         kmodDriverContainer:    
+            auristorRegistry: "ghcr.io/auristor"
+            auristorKmodVersion: "2021.05-15"
+            yfsCache: /var/cache/yfs            ## Host Path to the local cache
+
+            mapVolumes:
+               ### SEE BELOW FOR DETAILS ON THE MAP VOLUMES ###
+
+         csiDriver:
+            image:       ###   Registry and Version Values
+               auristorRegistry: ghcr.io/auristor
+               auristorCsiVersion: 2022-02.1
+               csiDriverImagePullPolicy: Always
+               k8sSigStorageRegistry: k8s.gcr.io/sig-storage
+               k8sSigStorageImagePullPolicy: Always
+
+            cacheManager:     ###  Cache Manager Values
+               defaultCacheManager: auristor    # (auristor or kafs)
+
+            logging:
+               logLevel: INFO  # (DEBUG, INFO, WARNING, ERROR, or FATAL)
 
 
-## DOC
+### KMOD Driver Container Configuration
 
-[Presentation on CSI](doc/TheAuriStorfs-SRO-KMOD-SpecialResource-20220207.pdf)
-
-## BUILD
-
-```
-echo == Repackage Helm script for deployable yaml objects ===
-
-cd charts
-
-# Create ./auristor-client-0.0.1.tgz
-helm package auristor-client-0.0.1
-
-# Copy Helm Chart into ConfigMap (cm) directory
-mkdir -p cm
-cp auristor-client-0.0.1.tgz cm/auristor-client-0.0.1.tgz
-
-# Create an index file specifying the Helm repo that contains the Helm chart
-helm repo index cm --url=cm://auristor-client/auristor-client-chart
-
-```
-
-# The AuriStor SRO Client
-
-The AuriStor SRO Client can be built and deployed/undeployed with these scripts (recommended)
-- [deploy](deploy)
-- [undeploy](undeploy)
-
-
-Manual Deployment of the SRO can be done with:
-
-
-      $ oc create -f auristor-client-0.1.1
-        
+The KMOD Driver Container configurations consists of specifying:
+- The Container Registry for the Driver Container Images (the **auristorRegistry** field)
+- The AuriStor kernel module version (the **auristorKmodVersion** field)
+- The location of the AuriStorFS cache (the **yfsCache** field)
+- The location and contents of AuriStorFS configuration files (the **mapVolumes** field)
 
 
 
-If (for example during debugging) you wish to use a different  kvc-auristor-client repo, change the driverContainer source repo (git:) and/or branch (ref:) in the 'driverContainer' section:
+### CSI Driver Configuration
 
-      driverContainer:
-        source:
-            git:
-                uri: "https://github.com/GerrySeidman/kvc-auristor-client.git"
-                ref: "fixing-repo-pull-failure"
+The CSI Driver configurations consists of specifying:
+- The Container Registry for the AuriStorFS CSI Container Images (the **image.auristorRegistry** field)
+- The AuriStor CSI Driver version (the **image.auristorCsiVersion** field)
+- The AuriStor CSI Driver Container Image Pull Policy (the **image.csiDriverImagePullPolicy** field)
+- The Container Registry for the Kubernetes SigStorage CSI Sidecar Container Images (the **image.k8sSigStorageRegistry** field)
+- The CSI Sidecar Container Image Pull Policy (the **image.csiDriverImagePullPolicy** field)
 
-This change can be done to eisther either/both to the SpecialResource yaml file(s):
 
-- [charts/cm/auristor-client-from-configmap.yaml](charts/cm/auristor-client-from-configmap.yaml)
-- [charts/auristor-client-0.0.1/auristor-client.yaml](charts/auristor-client-0.0.1/auristor-client.yaml)
+## Deploying the AuriStorFS KMOD/SRO Special Resource
 
-Documentation on Special Resource Operators can be found here:
+## Deploying the AuriStorFS KMOD/CSI Special Resource
 
-- [RedHat OpenShift Chapter 3.3: Using the Special Resource Operator](https://access.redhat.com/documentation/si-lk/openshift_container_platform/4.9/html/specialized_hardware_and_driver_enablement/special-resource-operator)
-- [OKD - Special Resource Operator](https://docs.okd.io/latest/hardware_enablement/psap-special-resource-operator.html)
+## Using The AuriStor CSI Driver
+
+[See Separate README.md](docs/csi)
+
+
+
+
+
 
 
 

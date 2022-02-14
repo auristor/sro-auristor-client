@@ -1,0 +1,20 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: evx
+spec:
+  terminationGracePeriodSeconds: 0
+  containers:
+    - name: simple
+      image:  alpine
+      command: [ "sleep", "1000"]      
+      volumeMounts:
+      - mountPath: "/data"
+        name: data
+  volumes:
+    - name: data
+      csi:
+        driver: auristorfs.csi.auristor.com
+        volumeAttributes:
+          cell-name:  "your-cell.com"
+          volume-name: "your-volume"

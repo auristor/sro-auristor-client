@@ -3,27 +3,31 @@ kind: SpecialResource
 metadata:
   name: auristor-client
 spec:
-  namespace: auristor-xyz
+  namespace: auristorfs-client
 
   chart:
     name: auristor-client
     version: 0.0.1
     repository:
       name: example
-      url: cm://auristor-xyz/auristor-client-chart
+      url: cm://auristorfs-client/auristor-client-chart
       
   set:
     kind: Values
     apiVersion: sro.openshift.io/v1beta1
     kmodNames: ["yfs"]
+
+    runArgs:
+      platform: "openshift-container-platform"
       
     kmodDriverContainer:
       auristorRegistry: "ghcr.io/auristor"
       auristorKmodVersion: "2021.05-15"
-      terminationGracePeriodSeconds: 3
+      terminationGracePeriodSeconds: 2
       yfsCache: /var/cache/yfs
-      directories:
+      mapVolumes:
         - label: etc-yfs
+          type: internalConfigMap
           target: /etc/yfs
           files:
             yfs-client.conf: |
@@ -51,6 +55,7 @@ spec:
                   # Insert yfs-client.conf contents here (at this indenting)
                   This is something else      
         - label: usr-share-yfs
+          type: createConfigMap
           target: /usr/share/yfs
           files:
             cellservdb.conf: |
@@ -79,6 +84,19 @@ spec:
                       }
                     }
 
+        # - label: foozy
+        #   type: externalConfigMap
+        #   target: /usr/share/foozy
+        #   configMap:
+        #     name: foozy
+
+        # - label: shhhh
+        #   type: externalSecret
+        #   target: /usr/share/foozy
+        #   secret:
+        #     name: foozy            
+
+
     csiDriver:
 
       ###   Registry and Version Values
@@ -92,33 +110,7 @@ spec:
       ###  Cache Manager Values
       cacheManager:
         defaultCacheManager: auristor
-        # afsRootDir: "/afs"              # Set to dynamic AFS root (typically /afs) or null if not pre-loaded (ie in OpenShift).  afsRootDir is not used if defaultCacheManager=kafs
 
       ### Logging Values
       logging:
         logLevel: DEBUG                       # Log level for all components (DEBUG, INFO, WARNING, ERROR, or FATAL)
-        flattenLog: "false"                   # Set to true to fold all logging messages to one line (in particular stack traces, though it makes them harder to read)
-
-      ### External Volume Manager Values
-      microServices:
-        externalVolumeManagerURL: http://auristorfs-volume-manager       ## Default implementation provided
-
-      ## ExternalVolumeManager AuristorFS volume status/validation during CSI phase
-      externalVolumeManager:
-        persistentVolumeReadyToCreateValidation: None                 #	None, Exists, or Online
-        persistentVolumeReadyToAttachOntoNodeValidation: None         #	None, Exists, or Online
-        persistentVolumeReadyForFirstConsumerOnNodeValidation: None   #	None, Exists, or Online
-        persistentVolumeReadyToMountOntoPodResponseValidation: None   #	None, Exists, or Online
-
-      # PV naming Values
-      persistentVolumeNaming:
-        volumeNamePrefix: afs              # PV Name Prefix (used by csi-provisioner sidecar)
-
-      # Debugging Values
-      debug:
-        debugging: false            
-        # debugShowCsiRequests: "false"
-        # debugShowMounts: "false"
-        # debugShowExecs: "false"
-        # pvUIDLength: "10"                  # Shortens internal PVHandle name which is useful during debugging
-        # volumeNameUuidLength: ""            # Shortens PV names which is useful during debugging (used by csi-provisioner sidecar)      
