@@ -1,56 +1,15 @@
 #!/bin/bash
-echo === Deploying SRO ===
 
-while true ;
-do
-    foo=$( oc get specialresource auristor-client  | wc -l)
+echo === Deploying Auristor Special Resource ===
 
-    if [ "$foo" -gt "0" ]; then
-        echo waiting for specialresource/auristor-client to terminate
-        sleep 2
-    else
-        break
-    fi
-done
+oc get namespace auristorfs-client >> /dev/null
 
-# Create namespace 
-if oc get namespace auristor-client >/dev/null; then
-  echo namespace auristor-client already exists
-else
-  oc create namespace auristor-client 
+ if [ "$?" -ne 0 ]; then
+  echo ERROR: Namespace does not exists, not deploying SpecialResource
+  exit 1
 fi 
 
 # Create ConfigMap object
-oc delete -n auristor-client cm auristor-client-chart --ignore-not-found=true
-oc create -n auristor-client cm auristor-client-chart --from-file=charts/cm/index.yaml --from-file=charts/cm/auristor-client-0.0.1.tgz 
-
+oc create -n auristorfs-client cm auristor-client-chart --from-file=charts/cm/index.yaml --from-file=charts/cm/auristor-client-0.0.1.tgz 
 
 oc create -f charts/auristor-client.yaml
-
-exit 0
-# Create auristor-client-0.0.1.tgz
-cd charts
-helm package auristor-client-0.0.1
-
-# Copy Helm Chart into ConfigMap (cm) directory
-mkdir -p cm
-cp auristor-client-0.0.1.tgz cm/auristor-client-0.0.1.tgz
-
-# Create an index file specifying the Helm repo that contains the Helm chart
-helm repo index cm --url=cm://auristor-client/auristor-client-chart
-
-# Create namespace 
-if oc get namespace auristor-client >/dev/null; then
-  echo namespace auristor-client already exists
-else
-  oc create namespace auristor-client 
-fi 
-
-# Create ConfigMap object
-oc delete -n auristor-client cm auristor-client-chart --ignore-not-found=true
-oc create -n auristor-client cm auristor-client-chart --from-file=cm/index.yaml --from-file=cm/auristor-client-0.0.1.tgz 
-
-
-oc create -f cm/auristor-client-from-configmap.yaml
-
-

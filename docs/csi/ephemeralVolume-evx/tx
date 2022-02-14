@@ -1,0 +1,3 @@
+kubectl delete -f  pod-evx.yaml &
+sleep 2
+echo All objects being deleted in the background

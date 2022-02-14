@@ -1,4 +1,4 @@
 
-./undeploy
-./build
-./deploy
+./undeploy  $@
+./buildSpecialResource $@
+./deploy $@

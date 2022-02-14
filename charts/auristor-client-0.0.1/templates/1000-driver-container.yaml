@@ -66,7 +66,7 @@ spec:
         {{- $kfvSplit := splitList   "." .Values.kernelFullVersion  }}
         {{- $elVersionSplit :=  index $kfvSplit 5 | splitList "_"}}
 
-        image: {{ .Values.auristorRegistry }}/auristor-sro-kmod-{{ .Values.auristorVersion }}:
+        image: {{ .Values.kmodDriverContainer.auristorRegistry }}/auristor-kmod-{{ .Values.kmodDriverContainer.auristorKmodVersion }}:
                       {{- index $kfvSplit 0 -}}.{{- index $kfvSplit 1 -}}.{{- index $kfvSplit 2 -}}.
                       {{- index $elVersionSplit 0 -}}.{{- index $kfvSplit 6 }}      
         
@@ -75,13 +75,32 @@ spec:
         lifecycle:
           preStop:
             exec:
-              command: ["/bin/sh", "-c", "systemctl stop kmods-via-containers@{{.Values.specialresource.metadata.name}}"]
+              command:
+              - /bin/sh
+              - -c
+              - |
+                echo At $(date)  Begin Shutdown  | tee -a /tmp/STOPPING
+                echo At $(date)  systemctl status kmod-via-containers@{{.Values.specialresource.metadata.name}} 
+                systemctl status kmod-via-containers@{{.Values.specialresource.metadata.name}}  | tee -a /tmp/STOPPING
+                echo At $(date)  systemctl stop kmod-via-containers@{{.Values.specialresource.metadata.name}} 
+                systemctl stop kmod-via-containers@{{.Values.specialresource.metadata.name}}  | tee -a /tmp/STOPPING                
+                while true; do
+                  lsmod | grep yfs
+                  if [ "$?" -ne 0 ]; then
+                      break
+                  fi
+                  echo At $(date) kmod is still running.... | tee -a /tmp/STOPPING         
+                  echo At $(date) rmmod yfs 2>&1 | tee -a /tmp/STOPPING         
+                  rmmod yfs 2>&1 | tee -a /tmp/STOPPING       
+                  sleep 1
+                done
+                echo At $(date) kmod unloaded ... exiting | tee -a /tmp/STOPPING
         securityContext:
           privileged: true
         volumeMounts:
         - name: yfs-cache
           mountPath: /var/cache/yfs
-          {{- range .Values.kmodDriverContainer.directories }}
+          {{- range .Values.kmodDriverContainer.mapVolumes }}
         - name: {{ .label }}
           mountPath: {{ .target }}
           {{ end }}
@@ -93,14 +112,14 @@ spec:
       - name: yfs-cache
         hostPath: 
           path: {{ .Values.kmodDriverContainer.yfsCache }}
-      {{- range .Values.kmodDriverContainer.directories }}
+      {{- range .Values.kmodDriverContainer.mapVolumes }}
       - name: {{ .label }}
         configMap: 
           name: {{ .label }}
         {{ end }}  
 
 
-{{- range .Values.kmodDriverContainer.directories }}
+{{- range .Values.kmodDriverContainer.mapVolumes }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -110,5 +129,4 @@ data:
   {{- range $k, $v := .files }}
   {{ $k }}: |{{ $v }}
   {{ end }}
-  ace: Venture
 {{ end }}
