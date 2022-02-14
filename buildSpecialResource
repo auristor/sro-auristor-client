@@ -6,7 +6,7 @@ helm package auristor-client-0.0.1
 
 # Copy Helm Chart into ConfigMap (cm) directory
 mkdir -p cm
-cp auristor-client-0.0.1.tgz cm/auristor-client-0.0.1.tgz
+mv auristor-client-0.0.1.tgz cm/auristor-client-0.0.1.tgz
 
 # Create an index file specifying the Helm repo that contains the Helm chart
 helm repo index cm --url=cm://auristorfs-client/auristor-client-chart -n auristorfs-client

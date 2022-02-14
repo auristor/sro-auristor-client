@@ -1,0 +1,6 @@
+
+oc create -n auristorfs-client cm etc-yfs  --from-file=yfs-client.conf
+
+oc create -n auristorfs-client cm usr-share-yfs --from-file=cellservdb.conf
+
+oc create -n auristorfs-client secret generic etc-yfs-keytabs --from-file=my-keytab

@@ -27,75 +27,19 @@ spec:
       yfsCache: /var/cache/yfs
       mapVolumes:
         - label: etc-yfs
-          type: internalConfigMap
           target: /etc/yfs
-          files:
-            yfs-client.conf: |
-              # This Comment is required (at this indenting) to satisfy helm indenting
-                  # Insert yfs-client.conf contents here (at this indenting)
+          configMap:
+            configMapName: etc-yfs        
 
-                  # This merges the grand.central.org [cells] section:
-                  include /usr/share/yfs/cellservdb.conf
-                  # includedir /etc/yfs/yfs-client.conf.d
-
-                  [defaults]
-                  # You need to set a thiscell here
-                    thiscell = your-file-system.com
-
-                  [afsd]
-                      blocks = 100000
-                      debug = yes
-                      # memcache = yes
-                      nomount = yes
-
-                  [cells]
-                  # You may define your own cells here.
-            other: |
-              # This Comment is required (at this indenting) to satisfy helm indenting
-                  # Insert yfs-client.conf contents here (at this indenting)
-                  This is something else      
         - label: usr-share-yfs
-          type: createConfigMap
           target: /usr/share/yfs
-          files:
-            cellservdb.conf: |
-              # This Comment is required (at this indenting) to satisfy helm indenting
-                  # AuriStorFS cellservdb client configuration
-                  # 1 March 2021
-                  #
-                  # This file should be placed in the yfs-client.conf.d directory
-                  # or be included from within the yfs-client.conf file.
+          configMap:
+            configMapName: usr-share-yfs
 
-                  [cells]
-                    # umich.edu imported from AFSDB
-                    umich.edu = {
-                      description = "University of Michigan - Campus"
-                      use_dns = yes
-                      servers = {
-                        fear.ifs.umich.edu = {
-                          address = 141.211.1.32
-                        }
-                        surprise.ifs.umich.edu = {
-                          address = 141.211.1.33
-                        }
-                        ruthless.ifs.umich.edu = {
-                          address = 141.211.1.34
-                        }
-                      }
-                    }
-
-        # - label: foozy
-        #   type: externalConfigMap
-        #   target: /usr/share/foozy
-        #   configMap:
-        #     name: foozy
-
-        # - label: shhhh
-        #   type: externalSecret
-        #   target: /usr/share/foozy
-        #   secret:
-        #     name: foozy            
-
+        - label: etc-yfs-keytabs
+          target: /etc/yfs-keytabs
+          secret:
+            secretName: etc-yfs-keytabs
 
     csiDriver:
 

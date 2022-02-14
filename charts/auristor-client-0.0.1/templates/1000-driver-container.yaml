@@ -112,21 +112,19 @@ spec:
       - name: yfs-cache
         hostPath: 
           path: {{ .Values.kmodDriverContainer.yfsCache }}
+  
       {{- range .Values.kmodDriverContainer.mapVolumes }}
+      {{- if .configMap }}
       - name: {{ .label }}
         configMap: 
           name: {{ .label }}
-        {{ end }}  
+      {{ end -}}  
+      {{- end -}}
 
-
-{{- range .Values.kmodDriverContainer.mapVolumes }}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .label }}
-data:
-  {{- range $k, $v := .files }}
-  {{ $k }}: |{{ $v }}
-  {{ end }}
-{{ end }}
+      {{- range .Values.kmodDriverContainer.mapVolumes }}
+      {{- if .secret }}
+      - name: {{ .label }}
+        secret: 
+          secretName: {{ .label }}
+      {{ end -}}  
+      {{- end -}}

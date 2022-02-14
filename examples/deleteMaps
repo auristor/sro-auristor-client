@@ -1,0 +1,6 @@
+
+oc delete -n auristorfs-client cm etc-yfs 
+
+oc delete -n auristorfs-client cm usr-share-yfs
+
+oc delete -n auristorfs-client secret etc-yfs-keytabs
