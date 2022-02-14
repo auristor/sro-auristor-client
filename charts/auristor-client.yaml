@@ -4,16 +4,14 @@ metadata:
   name: auristor-client
 spec:
   namespace: auristor-xyz
-  debug: false
+
   chart:
     name: auristor-client
     version: 0.0.1
     repository:
       name: example
       url: cm://auristor-xyz/auristor-client-chart
-      # It is possible to deploy from local files instead of creating ConfigMap
-      # This approach is not recommended
-      # url: file:///charts
+      
   set:
     kind: Values
     apiVersion: sro.openshift.io/v1beta1

@@ -1,30 +1,64 @@
-# THIS MULTI-PHASE IS NOT READY
+# TO DO Items
+## For Gerry To do 
+- Secrets
+- Other than Inline Configmaps and Secretes
+- Namespaces other than auristor-xyz (Refactor Build Scripts, create into /build)
+- Better handle 'hidden' defaults (ie without needing to show them in values.yaml)
 
-* Waiting for response from Red Hat regarding 'endpoint' and 'volumeattachment' privilege escallation
-* 3000-csi-driver.yaml - is currently parked on the root.  It needs to be moved back to templates
-* 2075-retry-csi.yaml - is the iterative test version. Currently in 'fairly' good shape.  Needs to be merged into csiDriver repo's chart
-* Need to revisit values.yaml vs auristor-client.yaml  (namely )
-
-        charts/auristor-client.yaml
-        values.yaml
-
-* Lots of cruft on the root still
-
-        1000-driver-container.yaml
-        2050-faux-csi-working.yaml
-        2050-faux-csi.yaml
-        2075-retry-csi.yaml
-        2100-pookie.yaml
-        3000-csi-driver.yaml
-        bu
-        cbu
-        charts/auristor-client-0.0.1/templates/2075-retry-csi.yaml
-        rbu
-* Add validation: https://helm.sh/docs/topics/charts/#schema-files
-* Add Defaults as a subchart: https://helm.sh/docs/topics/charts/#schema-files
+## Questions fro SRO Team
+- How to do updates without shutting down cluster
+- What happens if pod failing on one node prevents next stage (wait false?)
+- How to do rolling updates 
 
 
-# Original Docs below... under "The AuriStor SRO Client"
+# The AuriStorfs KMOD/CSI Special Resource 
+
+## Background
+To access data from AuriStorFS volumes, a kernel module (aka cache manager) must first be installed on the host node.
+
+To mount AuriStorFS Volumes onto Pods running on that node, a AuriStor CSI Driver Pod must first be running on that Node
+
+Additionally, the kernel module must be loaded prior to the starting of the AuriStor CSI driver
+
+The kernel modules and CSI drivers are installed and managed utilizing the [Special Resource Operator (SRO)](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-special-resource-operator.html). 
+ The Special Resource Operator itself is dependent upon the [Node Feature Discovery Operator (NFD)](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-node-feature-discovery-operator.html) which avails information such as the installed Kernel Version information to the Special Resource Operator from the host machine.
+
+ The Special Resource Operator looks for **SpecialResource Objects** on your cluster.  These SpecialResource Objects encapsulate all resource/vendor-specific information necessary to install the resource prior to scheduling Application Pods onto nodes in your cluster. 
+
+ This Repository contains supporting scripts and objects necessary for creating and deploying an AuriStorFS KMOD/CSI **SpecialResource** Object.
+
+ SRO contains an internal embedded Helm engine. The primary components of a SpecialResource objects is a reference to a Helm Script along with values to be made available to the 
+
+----
+
+
+The examples in this section use the simple-kmod kernel module to demonstrate how to use the SRO to build and run a driver container. 
+
+In the first example, the SRO image contains a local repository of Helm charts including the templates for deploying the simple-kmod kernel module. 
+
+In this case, a SpecialResource manifest is used to deploy the driver container. 
+
+In the second example, the simple-kmod SpecialResource object points to a ConfigMap object that is created to store the Helm charts.
+
+[Using a ConfigMap](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-special-resource-operator.html#deploy-simple-kmod-using-configmap-chart)
+
+---
+
+
+## Installing OpenShift Special Resource Operator
+
+The Special Resource Operator (SRO) and Node Feature Discovery Operator (NFD) must first be installed on your cluster in order to leverage the AuriStorFS KMOD/CSI SpecialResource. Instructions can be found on the official OpenShift site
+
+- [OpenShift NFD Installation](https://docs.openshift.com/container-platform/4.8/scalability_and_performance/psap-node-feature-discovery-operator.html#installing-the-node-feature-discovery-operator_node-feature-discovery-operator)
+
+
+- [OpenShift SRO Documentation](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-special-resource-operator.html#installing-special-resource-operator)
+
+
+
+## DOC
+
+[Presentation on CSI](doc/TheAuriStorfs-SRO-KMOD-SpecialResource-20220207.pdf)
 
 ## BUILD
 
