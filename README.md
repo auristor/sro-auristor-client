@@ -2,20 +2,20 @@
 # The AuriStorfs KMOD/CSI Special Resource 
 
 ## Background
-To access data from AuriStorFS volumes, a kernel module (aka cache manager) must first be installed on the host node.
+To access files stored in AuriStorFS volumes, a kernel module (aka cache manager) must first be installed on the host node.
 
-To mount AuriStorFS Volumes onto Pods running on that node, a AuriStor CSI Driver Pod must first be running on that Node
+To mount AuriStorFS Volumes onto Pods running on that node, the AuriStor CSI Driver Pod must first be running on that Node
 
 Additionally, the kernel module must be loaded prior to the starting of the AuriStor CSI driver
 
-The kernel modules and CSI drivers are installed and managed utilizing the [Special Resource Operator (SRO)](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-special-resource-operator.html). 
- The Special Resource Operator itself is dependent upon the [Node Feature Discovery Operator (NFD)](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-node-feature-discovery-operator.html) which avails information such as the installed Kernel Version information to the Special Resource Operator from the host machine.
+The orchestration of the installing and managing of the kernel modules and CSI drivers are accomplished using the [Special Resource Operator (SRO)](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-special-resource-operator.html). 
+ The Special Resource Operator itself is dependent upon the [Node Feature Discovery Operator (NFD)](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-node-feature-discovery-operator.html) which avails host information, such as the current Kernel Version, to the Special Resource Operator.
 
- The Special Resource Operator looks for **SpecialResource Objects** on your cluster.  These SpecialResource Objects encapsulate all resource/vendor-specific information necessary to install the resource prior to scheduling Application Pods onto nodes in your cluster. 
+ The Special Resource Operator responds to the presence of **SpecialResource Objects** on your cluster.  These SpecialResource Objects encapsulate all resource/vendor-specific information necessary to install the resource prior to scheduling Application Pods onto nodes in your cluster. 
 
- This Repository contains supporting scripts and objects necessary for creating and deploying an AuriStorFS KMOD/CSI **SpecialResource** Object.
+ This Repository contains supporting scripts and objects necessary for creating and deploying the **AuriStorFS KMOD/CSI SpecialResource** Object.
 
- SRO contains an internal embedded Helm engine. The primary components of a SpecialResource objects is a reference to a Helm Script along with values to be made available to the 
+ Note that SRO contains an internaly embedded Helm engine. The SpecialResource objects encompases a reference to a Helm Script along with values to be made available to the internal Helm engine (along with additional information provided  by the NFD Operator)
 
 
 
@@ -28,92 +28,152 @@ The Special Resource Operator (SRO) and Node Feature Discovery Operator (NFD) mu
 
 - [OpenShift SRO Documentation](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-special-resource-operator.html#installing-special-resource-operator)
 
-## Configuring the AuriStor KMOD/CSI Special Resource
+## AuriStor KMOD/CSI Special Resource Configuration
 
-The AuriStorFS KMOD/CSI Special Resource configuration is found in  [charts/auristor-client.yaml](charts/auristor-client.yaml)  
+The single AuriStorFS KMOD/CSI Special Resource configuration file is [charts/auristor-client.yaml](charts/auristor-client.yaml)  
 
-The Special Resource Operator has an embedded helm engine which generates then 'helm Values' by integrating information provided by the NFD Operator along with Special Resource specific values.  The 'Values' sent to this internal engine are synthesized by integrating NFD values along with values found in the 'set' section of the Special Resource Object. There is a separate block of values for the **kmodDriverContainer** and the **csiDriver** 
+
+The Helm 'Values' that are sent to  internal Helm engine when executing the SpecialResource state machine are synthesized by integrating NFD values along with values found in the 'set' section of the Special Resource Object. 
 
 AuriStorFS KMOD/SRO Configuration file: [charts/auristor-client.yaml](charts/auristor-client.yaml)
 
-      apiVersion: sro.openshift.io/v1beta1
-      kind: SpecialResource
-      metadata:
-      name: auristor-client
-      spec:
-      namespace: auristorfs-client
 
-      chart:
+   apiVersion: sro.openshift.io/v1beta1
+   kind: SpecialResource
+   metadata:
+   name: auristor-client
+   spec:
+   namespace: auristorfs-client
+
+   chart:
       name: auristor-client
       version: 0.0.1
       repository:
          name: example
          url: cm://auristorfs-client/auristor-client-chart
          
-      set:
-         kind: Values
-         apiVersion: sro.openshift.io/v1beta1
-         kmodNames: ["yfs"]
+   set:
+      kind: Values
+      apiVersion: sro.openshift.io/v1beta1
+      kmodNames: ["yfs"]
 
-         runArgs:
-            platform: "openshift-container-platform"
-               
-         kmodDriverContainer:    
+      runArgs:
+         platform: "openshift-container-platform"
+         
+      kmodDriverContainer:
+         image:               ###   Registry and Version Values
             auristorRegistry: "ghcr.io/auristor"
             auristorKmodVersion: "2021.05-15"
-            yfsCache: /var/cache/yfs            ## Host Path to the local cache
+            kmodImagePullPolicy: Always
 
-            mapVolumes:
-               ### SEE BELOW FOR DETAILS ON THE MAP VOLUMES ###
+         yfsCache: /var/cache/yfs         ## Host Path to the local cache
 
-         csiDriver:
-            image:       ###   Registry and Version Values
-               auristorRegistry: ghcr.io/auristor
-               auristorCsiVersion: 2022-02.1
-               csiDriverImagePullPolicy: Always
-               k8sSigStorageRegistry: k8s.gcr.io/sig-storage
-               k8sSigStorageImagePullPolicy: Always
+         mapVolumes:
+         - label: etc-yfs
+            target: /etc/yfs
+            configMap:
+               configMapName: etc-yfs        
+         - label: usr-share-yfs
+            target: /usr/share/yfs
+            configMap:
+               configMapName: usr-share-yfs
+         - label: etc-yfs-keytabs
+            target: /etc/yfs-keytabs
+            secret:
+               secretName: etc-yfs-keytabs
 
-            cacheManager:     ###  Cache Manager Values
-               defaultCacheManager: auristor    # (auristor or kafs)
+      csiDriver:
+         image:       ###   Registry and Version Values
+            auristorRegistry: ghcr.io/auristor
+            auristorCsiVersion: 2022-02.1
+            csiDriverImagePullPolicy: Always
+            k8sSigStorageRegistry: k8s.gcr.io/sig-storage
+            k8sSigStorageImagePullPolicy: Always
 
-            logging:
-               logLevel: INFO  # (DEBUG, INFO, WARNING, ERROR, or FATAL)
+         cacheManager:       ###  Cache Manager Values
+            defaultCacheManager: auristor
 
-
-### KMOD Driver Container Configuration
-
-The KMOD Driver Container configurations consists of specifying:
-- The Container Registry for the Driver Container Images (the **auristorRegistry** field)
-- The AuriStor kernel module version (the **auristorKmodVersion** field)
-- The location of the AuriStorFS cache (the **yfsCache** field)
-- The location and contents of AuriStorFS configuration files (the **mapVolumes** field)
-
-
-
-### CSI Driver Configuration
-
-The CSI Driver configurations consists of specifying:
-- The Container Registry for the AuriStorFS CSI Container Images (the **image.auristorRegistry** field)
-- The AuriStor CSI Driver version (the **image.auristorCsiVersion** field)
-- The AuriStor CSI Driver Container Image Pull Policy (the **image.csiDriverImagePullPolicy** field)
-- The Container Registry for the Kubernetes SigStorage CSI Sidecar Container Images (the **image.k8sSigStorageRegistry** field)
-- The CSI Sidecar Container Image Pull Policy (the **image.csiDriverImagePullPolicy** field)
+         logging:
+            logLevel: INFO  # (DEBUG, INFO, WARNING, ERROR, or FATAL)
 
 
-## Deploying the AuriStorFS KMOD/SRO Special Resource
+### **kmodDriverContainer** Fields - Driver Container Configuration
+
+-   **auristorRegistry**: The Container Registry for the Driver Container Images
+-   **auristorKmodVersion**: The AuriStor kernel module version  
+-   **yfsCache**: The AuriStor kernel module version 
+-   **mapVolumes**: Any ConfigMap or Secret can be mounted as configurations for the cache manager
+   - - **label**: Used within the Pod to associate volumeMounts with volumes
+   - - **target**: Path in the Driver Container for the map files
+   - - **configMap.configMapName**: ConfigMap to associate with this entry
+   - - **secret.secretName**: Secret to associate with this entry
+
+
+### **csiDriver** Fields - CSI Driver Configuration
+
+-   **image.auristorRegistry**: The Container Registry for the AuriStorFS CSI Container Images
+-   **image.auristorCsiVersion**: The AuriStor CSI Driver version
+-   **image.csiDriverImagePullPolicy**: The AuriStor CSI Driver Container Image Pull Policy
+-   **image.k8sSigStorageRegistry**: he Container Registry for the Kubernetes SigStorage CSI Sidecar Container Images
+-   **image.csiDriverImagePullPolicy**: The CSI Sidecar Container Image Pull Policy 
+-   **cacheManager.defaultCacheManager**: "auristor" or "kafs"
+-   **logging.logLevel**: DEBUG, INFO, WARNING, ERROR, or FATAL
+
+
+
+## Preparing to deploy the AuriStorFS KMOD/CSI Special Resource
+
+### Configuring the Cache Manager
+- The configuration and keytab files configured for your deployment are made available to Driver Container via Kubernetes ConfigMap and Secrets objects that are then expanded into directories on the cache-manager/driver container  (yfs-client.conf, cellservdb.conf, keytabs, etc)  
+- - **NOTE**: These directories may not be nested. Directories containing configuration files are inserted using Kubernetes ConfigMap and Secret Volumes
+- - [Example files](examples) are provided along with a sample scripts for creating/deleting these objects
+- It is highly recommended that kmodDriverContainer images are copied from the the ```ghcr.io/auristor``` Container Registry to your  organizational (internal) container registry from.
+
+## Container Images
+
+### Driver Containers Image
+
+- **Repository Field:** kmodDriverContainer.auristorRegistry
+- **Image Version:**  kmodDriverContainer.auristorKmodVersion
+
+   | Type | Image Name | TAG |
+   |-------|-----|---|
+   | AuriStorFS KMOD | auristor-kmod-2021.05-15 | 4.18.0-305.el8.x86_64
+
+   <auristorRegistry>/auristor-kmod-<auristorKmodVersion>:<kernel/Arch>
+
+### CSI Driver Container Image
+
+- **Repository Field:** ***csiDriver.image.auristorRegistry***
+- **Image Version:**  ***csiDriver.image.auristorCsiVersion***
+
+- **Full Image Format:**  ***<auristorRegistry>/auristorfs-csi:<auristorCsiVersion>***
+
+   | Type | Image Name | TAG |
+   |-------|-----|---|
+   | AuristorFS CSI Driver | auristorfs-csi | 2022-02.1 |
+
+   <auristorRegistry>/auristorfs-csi:<auristorCsiVersion>
+
+
+### CSI Driver Sidecar Containers Images
+   **Repository Field:** csiDriver.image.k8sSigStorageRegistry
+
+   | Type | Image Name | TAG |
+   |-------|-----|---|
+   | External Provisioner | csi-provisioner | v3.1.0 |
+   | External Attacher | csi-attacher | v3.4.0 |
+   | Node Driver Registrar | csi-node-driver-registrar | v2.4.0 |
+   | Liveness Probe | livenessprobe | v2.5.0 |
+
+### Configuring the CSI Driver
+
 
 ## Deploying the AuriStorFS KMOD/CSI Special Resource
 
 ## Using The AuriStor CSI Driver
 
 [See Separate README.md](docs/csi)
-
-
-
-
-
-
 
 
 

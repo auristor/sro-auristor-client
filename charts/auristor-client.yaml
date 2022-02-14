@@ -21,10 +21,13 @@ spec:
       platform: "openshift-container-platform"
       
     kmodDriverContainer:
-      auristorRegistry: "ghcr.io/auristor"
-      auristorKmodVersion: "2021.05-15"
-      terminationGracePeriodSeconds: 2
-      yfsCache: /var/cache/yfs
+      image:
+        auristorRegistry: "ghcr.io/auristor"
+        auristorKmodVersion: "2021.05-15"
+        kmodImagePullPolicy: Always
+        terminationGracePeriodSeconds: 2
+
+      yfsCache: /var/cache/yfs         ## Host Path to the local cache
       mapVolumes:
         - label: etc-yfs
           target: /etc/yfs
@@ -42,19 +45,16 @@ spec:
             secretName: etc-yfs-keytabs
 
     csiDriver:
-
-      ###   Registry and Version Values
-      image:
+      image:       ###   Registry and Version Values
         auristorRegistry: ghcr.io/auristor
         auristorCsiVersion: 2022-02.1
         csiDriverImagePullPolicy: Always
         k8sSigStorageRegistry: k8s.gcr.io/sig-storage
         k8sSigStorageImagePullPolicy: Always
 
-      ###  Cache Manager Values
-      cacheManager:
+      
+      cacheManager:       ###  Cache Manager Values
         defaultCacheManager: auristor
 
-      ### Logging Values
       logging:
-        logLevel: DEBUG                       # Log level for all components (DEBUG, INFO, WARNING, ERROR, or FATAL)
+        logLevel: INFO  # (DEBUG, INFO, WARNING, ERROR, or FATAL)
