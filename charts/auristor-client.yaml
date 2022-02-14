@@ -7,7 +7,7 @@ spec:
 
   chart:
     name: auristor-client
-    version: 0.0.1
+    version: 2022.02.1
     repository:
       name: example
       url: cm://auristorfs-client/auristor-client-chart

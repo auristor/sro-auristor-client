@@ -1,12 +1,15 @@
 echo == Repackage Helm script for deployable yaml objects ===
 
-# Create auristor-client-0.0.1.tgz
+RELEASE_VERSION=${RELEASE_VERSION:-"2022.02.1"}
+
+
+# Create auristor-client-$RELEASE_VERSION.tgz
 cd charts
-helm package auristor-client-0.0.1
+helm package auristor-client-$RELEASE_VERSION
 
 # Copy Helm Chart into ConfigMap (cm) directory
 mkdir -p cm
-mv auristor-client-0.0.1.tgz cm/auristor-client-0.0.1.tgz
+mv auristor-client-$RELEASE_VERSION.tgz cm/auristor-client-$RELEASE_VERSION.tgz
 
 # Create an index file specifying the Helm repo that contains the Helm chart
 helm repo index cm --url=cm://auristorfs-client/auristor-client-chart -n auristorfs-client

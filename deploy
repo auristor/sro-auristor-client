@@ -1,5 +1,7 @@
 #!/bin/bash
 
+RELEASE_VERSION=${RELEASE_VERSION:-"2022.02.1"}
+
 echo === Deploying Auristor Special Resource ===
 
 oc get namespace auristorfs-client >> /dev/null
@@ -10,6 +12,6 @@ oc get namespace auristorfs-client >> /dev/null
 fi 
 
 # Create ConfigMap object
-oc create -n auristorfs-client cm auristor-client-chart --from-file=charts/cm/index.yaml --from-file=charts/cm/auristor-client-0.0.1.tgz 
+oc create -n auristorfs-client cm auristor-client-chart --from-file=charts/cm/index.yaml --from-file=charts/cm/auristor-client-$RELEASE_VERSION.tgz 
 
 oc create -f charts/auristor-client.yaml
