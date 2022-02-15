@@ -1,13 +1,13 @@
 
 
-# The AuriStorfs KMOD/CSI Special Resource 
+# The AuriStorFS KMOD/CSI Special Resource 
 
 ## Background
 To access files stored in AuriStorFS volumes, a kernel module (aka cache manager) must first be installed on the host node.
 
-To mount AuriStorFS Volumes onto Pods running on that node, the AuriStor CSI Driver Pod must first be running on that Node
+To mount AuriStorFS Volumes onto Pods running on that node, the AuriStorFS CSI Driver Pod must first be running on that Node
 
-Additionally, the kernel module must be loaded prior to the starting of the AuriStor CSI driver
+Additionally, the kernel module must be loaded prior to the starting of the AuriStorFS CSI driver
 
 The orchestration of the installing and managing of the kernel modules and CSI drivers are accomplished using the [Special Resource Operator (SRO)](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-special-resource-operator.html).  SRO acts as a state machine to help bring an OpenShift node up to compliance for a particular resource/vendor-specific Special Resource.  
 
@@ -103,8 +103,8 @@ AuriStorFS KMOD/SRO Configuration file: [charts/auristor-client.yaml](charts/aur
 ### kmodDriverContainer  - Driver Container Configuration
 -   **image:**
 	-   **auristorRegistry**: The Container Registry for the Driver Container Images
-	-   **auristorKmodVersion**: The AuriStor kernel module version  
--   **yfsCache**: The AuriStor kernel module version 
+	-   **auristorKmodVersion**: The AuriStorFS kernel module version  
+-   **yfsCache**: The AuriStorFS kernel module version 
 -   **mapVolumes**: Any ConfigMap or Secret can be mounted as configurations for the cache manager
 	-    **label**: Used within the Pod to associate volumeMounts with volumes
     - **target**: Path in the Driver Container for the map files
@@ -116,9 +116,9 @@ AuriStorFS KMOD/SRO Configuration file: [charts/auristor-client.yaml](charts/aur
 
 -   **image:**
 	-  **auristorRegistry**: The Container Registry for the AuriStorFS CSI Container Images
-	-   **auristorCsiVersion**: The AuriStor CSI Driver version
-	-   **csiDriverImagePullPolicy**: The AuriStor CSI Driver Container Image Pull Policy
-	-   **k8sSigStorageRegistry**: he Container Registry for the Kubernetes SigStorage CSI Sidecar Container Images
+	-   **auristorCsiVersion**: The AuriStorFS CSI Driver version
+	-   **csiDriverImagePullPolicy**: The AuriStorFS CSI Driver Container Image Pull Policy
+	-   **k8sSigStorageRegistry**: The Container Registry for the Kubernetes SigStorage CSI Sidecar Container Images
 	-   **.csiDriverImagePullPolicy**: The CSI Sidecar Container Image Pull Policy 
 -   **cacheManager:**
 	- **defaultCacheManager**: "auristor" or "kafs"
@@ -135,8 +135,8 @@ AuriStorFS KMOD/SRO Configuration file: [charts/auristor-client.yaml](charts/aur
 - - [Example files](examples) are provided along with a sample scripts for creating/deleting sample ConfigMap and Secret objects
 - It is highly recommended that kmodDriverContainer images are copied from the the ```ghcr.io/auristor``` Container Registry to your  organizational (internal) container registry from.
 
-## Deploying the AuriStor KMOD/CSI SpecialResource
-Deploying the AuriStor KMOD/CSI SpecialResource will most likely be integrated into your CI/CD pipeline.   
+## Deploying the AuriStorFS KMOD/CSI SpecialResource
+Deploying the AuriStorFS KMOD/CSI SpecialResource will most likely be integrated into your CI/CD pipeline.   
 
 The KMOD and CSI containers are deploy in the ***auristorfs-client*** namespace. It is assumed that this namespace has been created prior to deploying the SpecialResources
 
@@ -223,6 +223,6 @@ It is strongly recommended that all container images are copied from their publi
 
 
 
-## Using The AuriStor CSI Driver
+## Using The AuriStorFS CSI Driver
 
 [See Separate README.md](docs/csi)
