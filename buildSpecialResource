@@ -12,4 +12,4 @@ mkdir -p cm
 mv auristor-client-$RELEASE_VERSION.tgz cm/auristor-client-$RELEASE_VERSION.tgz
 
 # Create an index file specifying the Helm repo that contains the Helm chart
-helm repo index cm --url=cm://auristorfs-client/auristor-client-chart -n auristorfs-client
+helm repo index cm --url=cm://auristorfs-client/auristor-client-chart
