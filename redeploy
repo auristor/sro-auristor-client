@@ -1,6 +1,0 @@
-
-== Performing a full delete, rebuild and deploy
-
-./undeploy  $@
-./buildSpecialResource $@
-./deploy $@

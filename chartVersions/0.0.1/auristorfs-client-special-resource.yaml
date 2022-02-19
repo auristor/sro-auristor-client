@@ -1,16 +1,16 @@
 apiVersion: sro.openshift.io/v1beta1
 kind: SpecialResource
 metadata:
-  name: auristor-client
+  name: auristorfs-client
 spec:
   namespace: auristorfs-client
 
   chart:
-    name: auristor-client
-    version: 2022.02.1
+    name: auristorfs-client
+    version: 0.0.1
     repository:
       name: example
-      url: cm://auristorfs-client/auristor-client-chart
+      url: cm://auristorfs-client/auristorfs-client-chart
       
   set:
     kind: Values
@@ -47,7 +47,7 @@ spec:
     csiDriver:
       image:       ###   Registry and Version Values
         auristorRegistry: ghcr.io/auristor
-        auristorCsiVersion: 2022-02.1
+        auristorCsiVersion: 2022.02-2
         csiDriverImagePullPolicy: Always
         k8sSigStorageRegistry: k8s.gcr.io/sig-storage
         k8sSigStorageImagePullPolicy: Always

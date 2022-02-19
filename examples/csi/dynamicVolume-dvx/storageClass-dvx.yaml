@@ -6,6 +6,6 @@ provisioner: auristorfs.csi.auristor.com
 reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
 parameters:
-  cell-name:  "your-cell-name.com"
+  cell-name:  "your-cell.com"
   volume-name: "your-volume"
   creatable: "false"

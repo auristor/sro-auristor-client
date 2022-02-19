@@ -39,7 +39,7 @@ metadata:
   annotations:
     specialresource.openshift.io/wait: "true"
     specialresource.openshift.io/state: "driver-container"
-    specialresource.openshift.io/driver-container-vendor: auristor-client
+    specialresource.openshift.io/driver-container-vendor: auristorfs-client
     specialresource.openshift.io/kernel-affine: "true"
 spec:
   updateStrategy:

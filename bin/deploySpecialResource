@@ -1,0 +1,6 @@
+#!/bin/bash
+
+SPECIAL_RESOURCE=${1:-auristorfs-client-special-resource.yaml}
+
+oc create -f $SPECIAL_RESOURCE
+

@@ -1,7 +1,0 @@
-apiVersion: v2
-name: auristor-client
-description: AuriStor Client Support for KMOD and CSI
-icon: https://avatars.githubusercontent.com/u/55542927    # TODO: Replace with AuriStor icon
-type: application
-version: 2022.02.1     # Chart iterative number
-appVersion: 2022-02.1   # Semantic Application Version

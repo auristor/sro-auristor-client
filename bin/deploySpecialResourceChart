@@ -1,0 +1,19 @@
+#!/bin/bash
+
+SPECIAL_RESOURCE=${1:-auristorfs-client-special-resource.yaml}
+
+CHART_VERSION=$(grep version $SPECIAL_RESOURCE | awk '{ print $2 }')
+SPECIAL_RESOURCE_NAMESPACE=auristorfs-client
+
+echo === Deploying Auristor Special Resource: $SPECIAL_RESOURCE '(Resourse uses Chart Version: '$CHART_VERSION')'
+
+oc get namespace $SPECIAL_RESOURCE_NAMESPACE 1>/dev/null 2> /dev/null
+
+ if [ "$?" -ne 0 ]; then
+  echo ERROR: Namespace $SPECIAL_RESOURCE_NAMESPACE does not exists, not deploying SpecialResource
+  exit 1
+fi 
+
+oc create -f chartVersions/$CHART_VERSION/auristorfs-client-chart.yaml
+
+

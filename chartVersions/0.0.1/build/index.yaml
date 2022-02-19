@@ -1,0 +1,15 @@
+apiVersion: v1
+entries:
+  auristorfs-client:
+  - apiVersion: v2
+    appVersion: 2022.02-2
+    created: "2022-02-19T15:39:46.948878429-05:00"
+    description: AuriStor Client Support for KMOD and CSI
+    digest: a31c74244c5566aaa5408150203d197af60722a1a9906d92f71570c6afbc69f7
+    icon: https://avatars.githubusercontent.com/u/55542927
+    name: auristorfs-client
+    type: application
+    urls:
+    - cm://auristorfs-client/auristorfs-client-chart/auristorfs-client-0.0.1.tgz
+    version: 0.0.1
+generated: "2022-02-19T15:39:46.94847984-05:00"

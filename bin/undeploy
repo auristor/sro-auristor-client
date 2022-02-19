@@ -1,0 +1,9 @@
+#!/bin/bash
+
+echo === Undeploying Auristor Special Resource ===
+
+oc delete specialresource auristorfs-client --ignore-not-found=true
+oc delete cm -n auristorfs-client auristorfs-client-chart --ignore-not-found=true
+
+
+

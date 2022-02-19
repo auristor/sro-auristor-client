@@ -16,5 +16,5 @@ spec:
       csi:
         driver: auristorfs.csi.auristor.com
         volumeAttributes:
-          cell-name:  "your-cell-name.com"
+          cell-name:  "your-cell.com"
           volume-name: "your-volume"
