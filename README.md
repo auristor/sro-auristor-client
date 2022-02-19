@@ -196,7 +196,7 @@ The CSI Driver Pods leverage sidecar containers images provided by the Kubernete
 
 The specific sidecars and sidecar container image tags are embedded in the AuriStorFS KMOD/CSI SpecialResource chart.  
 
-Detailed information on required images are found in the README of the corresponding AuriStorFS KMOD/CSI SpecialResource version (see [chartVersions](chartVersions)/&lt;version&gt;/README.md or the [README for the latest version](charts/README.md)
+Detailed information on required images are found in the README of the corresponding AuriStorFS KMOD/CSI SpecialResource version (see [chartVersions](chartVersions)/&lt;version&gt;/README.md or the [README for the latest version](chart/README.md)
 
 Example:
 
