@@ -1,0 +1,60 @@
+apiVersion: sro.openshift.io/v1beta1
+kind: SpecialResource
+metadata:
+  name: auristorfs-client
+spec:
+  namespace: auristorfs-client
+
+  chart:
+    name: auristorfs-client
+    version: 0.0.2
+    repository:
+      name: example
+      url: cm://auristorfs-client/auristorfs-client-chart
+      
+  set:
+    kind: Values
+    apiVersion: sro.openshift.io/v1beta1
+    kmodNames: ["yfs"]
+
+    runArgs:
+      platform: "openshift-container-platform"
+      
+    kmodDriverContainer:
+      image:
+        auristorRegistry: "ghcr.io/auristor"
+        auristorKmodVersion: "2021.05-15"
+        kmodImagePullPolicy: Always
+        terminationGracePeriodSeconds: 2
+
+      yfsCache: /var/cache/yfs         ## Host Path to the local cache
+      mapVolumes:
+        - label: etc-yfs
+          target: /etc/yfs
+          configMap:
+            configMapName: etc-yfs        
+
+        - label: usr-share-yfs
+          target: /usr/share/yfs
+          configMap:
+            configMapName: usr-share-yfs
+
+        - label: etc-yfs-keytabs
+          target: /etc/yfs-keytabs
+          secret:
+            secretName: etc-yfs-keytabs
+
+    csiDriver:
+      image:       ###   Registry and Version Values
+        auristorRegistry: ghcr.io/auristor
+        auristorCsiVersion: 2022.02-2
+        csiDriverImagePullPolicy: Always
+        k8sSigStorageRegistry: k8s.gcr.io/sig-storage
+        k8sSigStorageImagePullPolicy: Always
+
+      
+      cacheManager:       ###  Cache Manager Values
+        defaultCacheManager: auristor
+
+      logging:
+        logLevel: INFO  # (DEBUG, INFO, WARNING, ERROR, or FATAL)
