@@ -1,19 +1,19 @@
  # AuriStorFS KMOD/CSI SpecialResource Version 0.0.2
  
 ## Location
-**Direct Link to AuriStorFS KMOD/CSI SpecialResource ConfigMap for this chart**
+**Public URL  to the AuriStorFS KMOD/CSI SpecialResource ConfigMap for this chart**
 
-[https://github.com/auristor/sro-auristor-client/blob/main/charts/auristor-client-2022.02.1/Chart.yaml](https://github.com/auristor/sro-auristor-client/blob/main/charts/auristor-client-2022.02.1/Chart.yaml)
+[https://github.com/auristor/sro-auristor-client/blob/main/chartVersions/0.0.1/auristorfs-client-chart.yaml](https://github.com/auristor/sro-auristor-client/blob/main/chartVersions/0.0.1/auristorfs-client-chart.yaml)
 
-**Repo Link to AuriStorFS KMOD/CSI SpecialResource ConfigMap for this chart** 
+(Repo Link:  [auristorfs-chart.yaml](auristorfs-chart.yam) )
 
-[chartVersions\0.0.2\auristorfs-chart.yaml](..\..\chartVersions\0.0.2\auristorfs-chart.yam)
+**Example  AuriStorFS KMOD/CSI SpecialResource for this Chart version** 
 
-**Example  AuriStorFS KMOD/CSI SpecialResource** 
-
-[chartVersions\0.0.2\auristorfs-special-resource.yaml](..\..\chartVersions\0.0.2\auristorfs-special-resource.yam)
+[auristorfs-special-resource.yaml](auristorfs-special-resource.yam)
 
 ## Images Used by this Chart 
+
+It is highly recommended that these be copied into your organizational Container Registry
 
 | Type | Container Registry | Image Name | TAG |
 |-------|-----|---|--|

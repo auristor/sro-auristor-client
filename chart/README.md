@@ -1,21 +1,23 @@
- # AuriStorFS KMOD/CSI SpecialResource Version 0.0.2
- 
+
+# AuriStorFS KMOD/CSI SpecialResource Version latest
+
 ## Location
-**Direct Link to AuriStorFS KMOD/CSI SpecialResource ConfigMap for this chart**
 
-[https://github.com/auristor/sro-auristor-client/blob/main/charts/auristor-client-2022.02.1/Chart.yaml](https://github.com/auristor/sro-auristor-client/blob/main/charts/auristor-client-2022.02.1/Chart.yaml)
+**Public URL to the AuriStorFS KMOD/CSI SpecialResource ConfigMap for this chart**
 
-**Repo Link to AuriStorFS KMOD/CSI SpecialResource ConfigMap for this chart** 
+[https://github.com/auristor/sro-auristor-client/blob/main/chartVersions/latest/auristorfs-client-chart.yaml](https://github.com/auristor/sro-auristor-client/blob/main/chartVersions/latest/auristorfs-client-chart.yaml)
 
-[chartVersions\0.0.2\auristorfs-chart.yaml](..\..\chartVersions\0.0.2\auristorfs-chart.yam)
+ (Repo Link: [auristorfs-chart.yaml](auristorfs-chart.yam) )
 
-**Example  AuriStorFS KMOD/CSI SpecialResource** 
+**Example AuriStorFS KMOD/CSI SpecialResource for this Chart version**
 
-[chartVersions\0.0.2\auristorfs-special-resource.yaml](..\..\chartVersions\0.0.2\auristorfs-special-resource.yam)
+[auristorfs-special-resource.yaml](auristorfs-special-resource.yam)
 
-## Images Used by this Chart 
+## Images Used by this Chart
 
-| Type | Container Registry | Image Name | TAG |
+It is highly recommended that these be copied into your organizational Container Registry  
+
+| Container| Container Registry | Image Name | TAG |
 |-------|-----|---|--|
 | AuristorFS CSI Driver | auristorfs-csi | auristorfs-csi | 2022-02.2 |
 | External Provisioner | k8s.gcr.io/sig-storage |csi-provisioner | v3.1.0 |
@@ -23,8 +25,7 @@
 | Node Driver Registrar | k8s.gcr.io/sig-storage |csi-node-driver-registrar | v2.4.0 |
 | Liveness Probe | k8s.gcr.io/sig-storage |livenessprobe | v2.5.0 |
 
-## Fully Qualified Container Images
-
+## Fully Qualified Container Images  
 
 	ghcr.io/auristor/auristorfs-csi:2022-02.2
 
@@ -33,5 +34,5 @@
 	k8s.gcr.io/sig-storage/csi-provisioner:v3.1.0
 
 	k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.4.0
-	
+
 	k8s.gcr.io/sig-storage/livenessprobe:v2.5.0
