@@ -1,5 +1,3 @@
-
-
 # The AuriStorFS KMOD/CSI Special Resource 
 
 ## Background
@@ -71,7 +69,7 @@ The three primary configuration sections for the Special are under .spec:
 
 		   chart:
 		      name: auristor-client
-		      version: 0.0.1
+		      version: 0.0.2
 		      repository:
 		         name: example
 		         url: cm://auristorfs-client/auristor-client-chart
@@ -213,16 +211,15 @@ ConfigMaps and Secrets must be created and deployed into your cluster prior to I
 
 ## Step 6: Deploying the AuriStorFS KMOD/CSI SpecialResource ConfigMap
 
-The pre-build ConfigMap corresponding to the version (spec.chart.version) in the  AuriStorFS KMOD/CSI SpecialResource object ([auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.yaml)) must be deployed prior to  , 
+Pre-build ConfigMap objects containing the charts corresponding to the versions referenced  AuriStorFS KMOD/CSI SpecialResource object  (spec.chart.version)  are available under [chartVersions](chartVersions) with the latest version at [chartVersions/latest](chartVersions/latest).  These charts must be considered Read-Only and need be deployed prior to the AuriStorFS KMOD/CSI SpecialResource object.
 
-Prebuild versions of these ConfigMaps are available under [chartVersions](chartVersions)/&lt;version number>/auristorfs-client-chart.yaml
+The latest version of the AuriStorFS KMOD/CSI SpecialResource charts will be found  at:
 
-Example:
-
-    chartVersions\0.0.2\auristorfs-client-chart.yaml
+    chartVersions\latest\auristorfs-client-chart.yaml
 	
 
 A sample script for deploying these  directly from the ([auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.yaml))  file can be found at [bin/deploySpecialResourceChart](bin/deploySpecialResourceChart)
+
 
 ## Step 7:  Deploy the AuriStorFS KMOD/CSI SpecialResource object
 
