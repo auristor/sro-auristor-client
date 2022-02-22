@@ -16,4 +16,3 @@ spec:
     volumeAttributes:               # Attributes of the volume to publish. 
       cell-name:  "your-cell.com"
       volume-name: "your-volume"
-      creatable: "false"

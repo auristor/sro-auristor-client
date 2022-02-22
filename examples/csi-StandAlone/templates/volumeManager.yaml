@@ -1,0 +1,91 @@
+---
+####################################
+###    Auristor Volume Manager   ###
+####################################
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: auristorfs-volume-manager
+  labels:
+    app: auristorfs-volume-manager
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    name: auristorfs-api
+  selector:
+    app: auristorfs-volume-manager
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auristorfs-volume-manager-config
+data:
+  defaultCacheManager: "auristor"
+  apiServerPort: "80"
+
+  logLevel: {{ .Values.csiDriver.logging.logLevel | default "INFO" | quote }}  
+  flattenLog: {{ .Values.csiDriver.logging.flattenLog | default "false" | quote }}  
+  
+  {{ if .Values.csiDriver.debug }}
+  # Debugging Values
+  debugShowMounts: {{ .Values.csiDriver.debug.debugShowMounts | default "false" | quote }} 
+  debugShowExecs: {{ .Values.csiDriver.debug.debugShowExecs | default "false" | quote }} 
+  {{ end }}
+
+  # Debugging Values
+  {{ if .Values.csiDriver.externalVolumeManager }}
+  persistentVolumeReadyToCreateValidation: {{ .Values.csiDriver.externalVolumeManager.persistentVolumeReadyToCreateValidation | default "None" | quote }} 
+  persistentVolumeReadyToAttachOntoNodeValidation: {{ .Values.csiDriver.externalVolumeManager.persistentVolumeReadyToAttachOntoNodeValidation | default "None" | quote }} 
+  persistentVolumeReadyForFirstConsumerOnNodeValidation: {{ .Values.csiDriver.externalVolumeManager.persistentVolumeReadyForFirstConsumerOnNodeValidation | default "None" | quote }} 
+  persistentVolumeReadyToMountOntoPodResponseValidation: {{ .Values.csiDriver.externalVolumeManager.persistentVolumeReadyToMountOntoPodResponseValidation | default "None" | quote }} 
+  {{ end }}
+---
+
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: auristorfs-api
+spec:
+  serviceName: auristorfs-csi-svc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auristorfs-volume-manager
+  template:
+    metadata:
+      labels:
+        app: auristorfs-volume-manager
+    spec:
+      serviceAccountName: auristorfs-csi
+      priorityClassName: system-cluster-critical
+      terminationGracePeriodSeconds: 3
+      containers:             
+        - name: auristorfs-volume-manager
+          image: {{ .Values.csiDriver.image.auristorRegistry }}/auristorfs-csi:{{ .Values.csiDriver.image.auristorCsiVersion }}
+          imagePullPolicy: {{ .Values.csiDriver.image.csiDriverImagePullPolicy | quote }}
+          securityContext:
+            privileged: true
+          envFrom: 
+          - configMapRef:
+              name: auristorfs-volume-manager-config
+          env:
+            - name: VOLUME_MANAGER
+              value: "true"
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          ports:
+          - containerPort: 8080
+            name: auristorfs-api
+      
+            protocol: TCP
+          # - containerPort: 9898
+          #   name: healthz
+          #   protocol: TCP

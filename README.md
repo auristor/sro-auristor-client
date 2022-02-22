@@ -225,3 +225,7 @@ A sample script for deploying these  directly from the ([auristorfs-client-speci
 
 oc create -f auristorfs-client-special-resource.yaml
 
+# Mounting AuriStorFS Volumes as OpenShift Volumes
+The AuriStorFS CSI Driver enables mounting of AuriStorFS Volumes as Kuberntes Persistent, Dynamic or Ephemeral Volumes.
+
+CSI Examples [can be found here](examples/csi)

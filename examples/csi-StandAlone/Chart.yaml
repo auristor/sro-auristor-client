@@ -1,0 +1,14 @@
+apiVersion: v2
+name: "auristorfs-csi-driver"
+icon: https://cdn4.iconfinder.com/data/icons/computers-3/32/61-01-512.png
+version: "0.0.2"
+appVersion: "2022.02-2"
+description: A Helm chart for installing the AuriStorFS CSI Driver for Kubernetes
+type: application
+keywords:
+  - AuriStorF
+  - AFS
+  - Storage
+  - CSI
+
+

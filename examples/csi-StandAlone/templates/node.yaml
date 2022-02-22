@@ -1,0 +1,161 @@
+---
+####################################
+###       Auristor CSI Node      ###
+####################################
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auristorfs-csi-node-config
+data:
+  {{ if .Values.csiDriver.microServices }}
+  externalVolumeManagerURL: {{ .Values.csiDriver.microServices.externalVolumeManagerURL }}   
+  {{ else }}
+  externalVolumeManagerURL: "http://auristorfs-volume-manager"  
+  {{ end }}
+   
+  defaultCacheManager: {{ .Values.csiDriver.cacheManager.defaultCacheManager }}    # kafs or auristor
+
+  logLevel: {{ .Values.csiDriver.logging.logLevel | default "INFO" | quote }}  
+  flattenLog: {{ .Values.csiDriver.logging.flattenLog | default "false" | quote }}  
+
+  {{ if .Values.csiDriver.debug }}
+  # Debugging Values
+  debugShowCsiRequests: {{ .Values.csiDriver.debug.debugShowCsiRequests | default "false" | quote }} 
+  debugShowMounts: {{ .Values.csiDriver.debug.debugShowMounts | default "false" | quote }} 
+  debugShowExecs: {{ .Values.csiDriver.debug.debugShowExecs | default "false" | quote }} 
+  {{ end }}
+---
+
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: auristorfs-csi-node
+spec:
+  selector:
+    matchLabels:
+      app: auristorfs-csi-node
+  template:
+    metadata:
+      labels:
+        app: auristorfs-csi-node
+    spec:
+      serviceAccountName: auristorfs-csi
+      priorityClassName: system-cluster-critical
+      terminationGracePeriodSeconds: 3
+      containers:
+
+        - name: node
+          image: {{ .Values.csiDriver.image.auristorRegistry }}/auristorfs-csi:{{ .Values.csiDriver.image.auristorCsiVersion }}
+          imagePullPolicy: {{ .Values.csiDriver.image.csiDriverImagePullPolicy | quote }}
+          envFrom: 
+          - configMapRef:
+              name: auristorfs-csi-node-config         
+          env:
+            - name: SERVICE_TYPE
+              value: "Node"              
+            - name: KUBERNETES_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: CSI_DOMAIN_SOCKET
+              value: "/csi/csi.sock"
+          securityContext:
+            privileged: true
+          # ports:
+          # - containerPort: 9888
+          #   name: healthz
+          #   protocol: TCP
+          # livenessProbe:              # TODO - implement this later
+          #   failureThreshold: 5
+          #   httpGet:
+          #     path: /healthz
+          #     port: healthz
+          #   initialDelaySeconds: 10
+          #   timeoutSeconds: 3
+          #   periodSeconds: 2
+          
+          volumeMounts:
+
+            - name: node-socket-dir
+              mountPath: /csi
+
+            - name: volume-mountpoint-dir
+              mountPath: /var/lib/kubelet/pods
+              mountPropagation: Bidirectional
+
+            {{ if .Values.csiDriver.cacheManager.afsRootDir }}
+            - name: afs-root
+              mountPath: /root/afs
+            {{ end }}
+
+            - name: app-var
+              mountPath: /root/appVar
+
+        - name: node-driver-registrar
+          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/csi-node-driver-registrar:v2.4.0
+          imagePullPolicy: {{ .Values.csiDriver.image.k8sSigStorageImagePullPolicy | quote }}
+          securityContext:
+            privileged: true
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "rm -rf /registration/csi.auristor.com           /registration/csi.auristor.com-reg.sock"]
+          args:
+          - --v=5
+          - --csi-address=/csi/csi.sock
+          - --kubelet-registration-path=/var/lib/kubelet/plugins/csi.auristor.com/csi.sock
+          env:
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          volumeMounts:
+          - name: node-socket-dir
+            mountPath: /csi
+          - name: registration-dir
+            mountPath: /registration/            
+
+        - name: liveness-probe
+          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/livenessprobe:v2.5.0
+          imagePullPolicy: {{ .Values.csiDriver.image.k8sSigStorageImagePullPolicy | quote }}
+          securityContext:
+            privileged: true          
+          args:
+            - --csi-address=/csi/csi.sock
+            - --probe-timeout=3s
+            - --health-port=9898
+          volumeMounts:
+          - mountPath: /csi
+            name: node-socket-dir        
+             
+      volumes:
+
+        - name: registration-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins_registry
+            type: Directory
+
+        - name: node-socket-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/csi.auristor.com
+            type: DirectoryOrCreate
+
+        - name: volume-mountpoint-dir
+          hostPath:
+            path: /var/lib/kubelet/pods
+            type: Directory
+            
+        {{ if .Values.csiDriver.cacheManager.afsRootDir }}
+        - name: afs-root
+          hostPath:
+            path: {{ .Values.csiDriver.cacheManager.afsRootDir }}
+            type: Directory
+        {{ end }}
+
+        - name: app-var
+          configMap:
+            name: auristorfs-csi-node-config
+       
