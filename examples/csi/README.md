@@ -23,6 +23,6 @@ Each of the above options involve configuring a different Kubernetes Object. Reg
 | Driver Provisioner Name | ,spec.csi.driver| .provisioner | .spec.volumes.csi.driver  |
 | AuriStorFS Volume Name | ,spec.csi.volumeAttributes.csi.volume_name| .parameters.volume_name | .spec.volumes.csi.volumeAttributes.volume_name |
 | AuriStorFS Cell Name |,spec.csi.volumeAttributes.csi.cell_name| .parameters.cell_name | .spec.volumes.csi.volumeAttributes.volume_name |
-| Example | [pv-pvx.yaml ](persistentVolume-pvx\pv-pvx.yaml) | [storageClass-dvx.yaml](dynamicVolume-dvx\storageClass-dvx.yaml) | [pod-evx.yaml](ephemeralVolume-evx\pod-evx.yaml) |
+| Example | [pv-pvx.yaml ](persistentVolume-pvx/pv-pvx.yaml) | [storageClass-dvx.yaml](dynamicVolume-dvx/storageClass-dvx.yaml) | [pod-evx.yaml](ephemeralVolume-evx/pod-evx.yaml) |
 
 

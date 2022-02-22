@@ -4,8 +4,8 @@ The AuriStorFS CSI Driver can be deployed in either of the below manners:
 
 | Deployment Type | asta |
 |---|---|
-| [Stand Alone](./CSI-Standalone/README.md) | Assumes that the AuriStorFS or kAFS kernel modules are already installed on the node <BR>(Described here) | 
-| [SRO Deployment](../../README.md) | The AuriStorFS Kernel Module is deployed along with the CSI Driver <BR>(Currently only available for OpenShift) |
+| [Stand Alone](.) | Assumes that the AuriStorFS or kAFS kernel modules are already installed on the node <BR>(Described here) | 
+| [SRO Deployment](../..) | The AuriStorFS Kernel Module is deployed along with the CSI Driver <BR>(Currently only available for OpenShift) |
 
 ## Deploying AuriStor CSI Stand-Alone
 
@@ -20,7 +20,7 @@ The AuriStor CSI Driver is deployed using Helm.  Below are the required steps
 
 ## Step 2: Configure the AuriStorFS CSI Client
 
-The csiDriver section of the Helm [values.yaml](values.yaml) file is configured in the same manner as documentented the corresponding section in Step 3 of the [SRO Deployment](../../README.md) 
+The csiDriver section of the Helm [values.yaml](values.yaml) file is configured in the same manner as documentented the corresponding section in Step 3 of the [SRO Deployment](../..)
 
  [values.yaml](values.yaml) 
 
