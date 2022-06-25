@@ -7,11 +7,11 @@ spec:
 
   chart:
     name: auristorfs-client
-    version: 0.0.2
+    version: 0.0.3
     repository:
       name: example
       url: cm://auristorfs-client/auristorfs-client-chart
-      
+
   set:
     kind: Values
     apiVersion: sro.openshift.io/v1beta1
@@ -19,7 +19,7 @@ spec:
 
     runArgs:
       platform: "openshift-container-platform"
-      
+
     kmodDriverContainer:
       image:
         auristorRegistry: "ghcr.io/auristor"
@@ -32,7 +32,7 @@ spec:
         - label: etc-yfs
           target: /etc/yfs
           configMap:
-            configMapName: etc-yfs        
+            configMapName: etc-yfs
 
         - label: usr-share-yfs
           target: /usr/share/yfs
@@ -52,7 +52,7 @@ spec:
         k8sSigStorageRegistry: k8s.gcr.io/sig-storage
         k8sSigStorageImagePullPolicy: Always
 
-      
+
       cacheManager:       ###  Cache Manager Values
         defaultCacheManager: auristor
 

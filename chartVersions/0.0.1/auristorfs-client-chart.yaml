@@ -11,7 +11,7 @@ data:
         created: "2022-02-19T15:39:46.948878429-05:00"
         description: AuriStor Client Support for KMOD and CSI
         digest: a31c74244c5566aaa5408150203d197af60722a1a9906d92f71570c6afbc69f7
-        icon: https://avatars.githubusercontent.com/u/55542927
+        icon: https://avatars.githubusercontent.com/u/213364
         name: auristorfs-client
         type: application
         urls:

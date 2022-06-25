@@ -7,7 +7,7 @@
 
 [https://github.com/auristor/sro-auristor-client/blob/main/chartVersions/latest/auristorfs-client-chart.yaml](https://github.com/auristor/sro-auristor-client/blob/main/chartVersions/latest/auristorfs-client-chart.yaml)
 
- (Repo Link: [auristorfs-chart.yaml](auristorfs-chart.yam) )
+ (Repo Link: [auristorfs-client-chart.yaml](auristorfs-client-chart.yaml) )
 
 **Example AuriStorFS KMOD/CSI SpecialResource for this Chart version**
 

@@ -2,6 +2,7 @@
 echo == Performing a full delete, rebuild and deploy
 
 bin/undeploy  $@
+bin/applyRBAC $@
 bin/buildSpecialResourceChart $@
 bin/deploySpecialResourceChart $@
 bin/deploySpecialResource $@
