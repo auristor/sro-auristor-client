@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+NAMESPACE=${NAMESPACE:-"default"}
+
+# watch oc get pods,pv,pvc,volumeattachments,sc -n default -o wide
+
+watch " \
+         echo --- Storage Classes ---  && oc get sc -n $NAMESPACE -l=demo=auristor -o=custom-columns=NAME:.metadata.name,VOLUME-BINDING-MODE:.volumeBindingMode   \
+      && echo "" \
+      && echo --- Persistent Volume Claims ---  && oc get pvc -n $NAMESPACE -o=custom-columns=NAME:.metadata.name,STATUS:.status.phase,VOLUME-NAME:.spec.volumeName,ACCESS-MODE:.spec.accessModes[0],STORAGE-CLASS:.spec.storageClassName \
+      && echo "" \
+      && echo --- Persistent Volumes ---  && oc get pv -n $NAMESPACE -o=custom-columns=NAME:.metadata.name,STATUS:.status.phase,CLAIM:.spec.claimRef.name,ACCESS-MODE:.spec.accessModes[0],STORAGE-CLASS:.spec.storageClassName \
+      && echo "" \
+      && echo --- Volume Attachments ---  && oc get volumeAttachments -n $NAMESPACE -o=custom-columns=NAME:.metadata.name,PERSISTENT-VOLUME:.spec.source.persistentVolumeName \
+      && echo "" \
+      && echo --- Pods [$NAMESPACE] --- && oc get pod -n $NAMESPACE -o=custom-columns=NAME:.metadata.name,STATUS:.status.phase,IP:.status.podIP,NODE:.spec.nodeName \
+    "

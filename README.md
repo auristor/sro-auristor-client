@@ -1,56 +1,69 @@
-# The AuriStorFS KMOD/CSI Special Resource 
+
+# The AuriStorFS KMOD/CSI Special Resource
+
+  
 
 ## Background
 
-To access files stored in AuriStorFS volumes from containers running in Pods on an OpenShift/Kubernetes cluster, has the following pre-requisites:
+To access files stored in AuriStorFS volumes from containers running in Pods on an OpenShift/Kubernetes node, the following pre-requisites must be met:
 
- - An AuriStorFS or kAFS client kernel module (aka cache manager) must be
-   installed on the host node.  
-   
+- An AuriStorFS or kAFS client kernel module (aka cache manager) must be installed on the host node.
 - The installed AuriStorFS/kAFS kernel module must match the Linux kernel running on the node.
-   
-- An AuriStorFS CSI Driver "Node" Pod must then be running on that Node.  
+- An AuriStorFS CSI Driver "Node" Pod must then be running on that Node.
+- The AuriStorFS/kAFS kernel module must be loaded prior to starting the AuriStorFS CSI Driver "Node" Pod
+- Other supporting AuriStorFS CSI Driver Pods must be running in the cluster that help coordinate the validation, creation, and maintainance of Kubernetes PersistentVolumes corresponding to the AuriStorFS Volumes being mounted into app;ication containers
 
-- The AuriStorFS/kAFS kernel module must be loaded prior to starting the  AuriStorFS CSI Driver "Node" Pod 
+The [Special Resource Operator (SRO)](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-special-resource-operator.html) is designed to help manage the deployment of kernel modules and drivers (such as for Distributed File Systems, GPUs, etc) on an existing OpenShift Container Platform cluster. SRO responds to the presence of **SpecialResource (SR)** Kubernetes objects which encapsulates all resource/vendor-specific information needed to guarantee the resource is properly installed and ready prior to scheduling Application Pods onto nodes.
 
-The [Special Resource Operator (SRO)](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-special-resource-operator.html) is designed to help manage the deployment of kernel modules and drivers (such as for Distributed File Systems, GPUs, etc) on an existing OpenShift Container Platform cluster.  SRO responds to the presence of **SpecialResource (SR)** kubernetes objects which encapsulates all resource/vendor-specific information needed to guarantee the resource is properly installed and ready prior to scheduling Application Pods onto nodes.  
+SRO contains an internaly embedded Helm engine which uses charts that are referenced by the SpecialResource object along with Helm Values necessary to configure the resource. The Helm Values in the SpecialResource object are merged with node host information, such as the installed Linux kernel version, that are made available to SRO by the [Node Feature Discovery Operator (NFD)](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-node-feature-discovery-operator.html)
 
-SRO contains an internaly embedded Helm engine which uses charts that are referenced by the SpecialResource object along with Helm Values necessary to configure the resource. The Helm Values in the SpecialResource object are merged with node host information, such as the installed Linux kernel version, that are made available to SRO by the [Node Feature Discovery Operator (NFD)](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-node-feature-discovery-operator.html) 
+  This Repository contains supporting scripts and objects necessary for creating and deploying the **AuriStorFS KMOD/CSI SpecialResource** Object.
 
- This Repository contains supporting scripts and objects necessary for creating and deploying the **AuriStorFS KMOD/CSI SpecialResource** Object.
-
+  
 # Using the AuriStorFS KMOD/CSI SpecialResource
+
 The following Steps are all that is required to leverage AuriStorFS volumes in your OpenShift Cluster
- 1. Install the Special Resource Operator and Node Discovery Operators
- 2. Create the auristorfs-client namespace
- 3. Configure the AuriStorFS KMOD/CSI SpecialResource object
- 4. Copy Container Images accessible onto your private Registry (recommended)
- 5.  Deploy the provided AuriStorFS Client configmap that corresponds to the version specified in the SpecialResource object
- 6. Deploy the AuriStorFS KMOD/CSI SpecialResource object
+
+1. Install the Special Resource Operator and Node Discovery Operators
+
+2. Create the **auristorfs-client** namespace
+
+3. Configure the AuriStorFS KMOD/CSI SpecialResource object ([auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.yaml))
+
+4. Copy Container Images accessible onto your private Registry (recommended)
+
+5. Create **auristorfs-client** Service Account
+
+6. Deploy the provided AuriStorFS Client configmaps that corresponds to the version specified in the SpecialResource object
+
+7. Deploy the AuriStorFS KMOD/CSI SpecialResource
+	* 7a. Applying the AuriStorFS CSI RBAC
+	* 7b. Deploying the AuriStorFS Special Resource Chart ConfigMap
+	* 7c. Deploying the AuriStorFS Special Resource Object
+
 
 ## Step 1: Installing SRO and NFD Operators
 
 The Special Resource Operator (SRO) and Node Feature Discovery Operator (NFD) must first be installed on your cluster in order to leverage the AuriStorFS KMOD/CSI SpecialResource. Instructions can be found on the official OpenShift site
 
-- [OpenShift NFD Installation](https://docs.openshift.com/container-platform/4.8/scalability_and_performance/psap-node-feature-discovery-operator.html#installing-the-node-feature-discovery-operator_node-feature-discovery-operator)
-
+ - [OpenShift NFD Installation](https://docs.openshift.com/container-platform/4.8/scalability_and_performance/psap-node-feature-discovery-operator.html#installing-the-node-feature-discovery-operator_node-feature-discovery-operator)
 
 - [OpenShift SRO Documentation](https://docs.openshift.com/container-platform/4.9/hardware_enablement/psap-special-resource-operator.html#installing-special-resource-operator)
 
+**Note**: There is an option to install these in a single namespace or all namespaces.  We recommend installing in a single namespace
+
 ## Step 2: Creating the Namespace for the AuriStorFS Client
 
-    apiVersion: v1
-    kind: Namespace
-    metadata:    
-      name: auristorfs-client
+Create a namespace 'auristorfs-client'
+
+    oc create namespace auristorfs-client
 
 
 ## Step 3: AuriStorFS KMOD/CSI Special Resource Configuration
 
-
 A single AuriStorFS Client SpecialResource object,  [auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.yaml), contains all necessary configuration data to manage the AuriStorFS kernel module and CSI Driver.  
 
-The three primary configuration sections for the Special are under .spec:
+In [auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.yaml) there are three primary configuration sections, each found under .spec:
 
 | Section |Description |
 |----|---|
@@ -69,9 +82,9 @@ The three primary configuration sections for the Special are under .spec:
 
 		   chart:
 		      name: auristor-client
-		      version: 0.0.2
+		      version: 0.0.3
 		      repository:
-		         name: example
+		         name: auristorfs-client-chart
 		         url: cm://auristorfs-client/auristor-client-chart
 		         
 		   set:
@@ -83,7 +96,7 @@ The three primary configuration sections for the Special are under .spec:
 		         platform: "openshift-container-platform"
 		         
 		      kmodDriverContainer:
-		         image:               ###   Registry and Version Values
+		         image:                           ##   Registry and Version Values
 		            auristorRegistry: "ghcr.io/auristor"
 		            auristorKmodVersion: "2021.05-15"
 		            kmodImagePullPolicy: Always
@@ -120,15 +133,16 @@ The three primary configuration sections for the Special are under .spec:
 
 ---
 
-###  KMOD Driver Container Configuration
 
-The AuriStorFS SpecialResource guarantees that a cache manager is running on each node in the OpenShift cluster.   A  "DriverContainer"  is run in a Pod on each node which has a cache manager configured in the same manner as it would on any machine.  
+##  KMOD Driver Container Configuration
+
+The AuriStorFS SpecialResource guarantees that a cache manager is running on each node in the OpenShift cluster.   A  "DriverContainer"  is run as a Pod on each node. The DriverContainer is responsibeich installs the AuriStorFS cache manager. The AuriStorFS Cache Manager installed through the Driver Container uses the same configuration files, keytabs, etc and in the same way that it would be configured any machine.  
 
 AuriStor provides DriverContainer Images for each AuriStorFS/Linux-kernel version pair.  It is only necessary to configure the SpecialResource with the desired AuriStorFS KMOD version.  SRO (via NFD) provides the kernel version to the SpecialResource which automatically selects the appropriate AuriStorFS DriverContainer image for the node.
 
 All necessary AuriStorFS cache manager configuration files (yfs-client.conf, cellservdb.conf, etc, keytabs, etc) are mapped into the DriverContainer on a per-directory basis via  Kubernetes ConfigMap and Secret objects (see mapVolumes fields)
 
-####  set.kmodDriverContainer  Fields
+###  **set.kmodDriverContainer** Fields
 -   **image:**
 	-   **auristorRegistry**: The Container Registry where the Driver Container Images are located
 	-   **auristorKmodVersion**: The AuriStorFS kernel module version  
@@ -201,29 +215,56 @@ Example:
     k8s.gcr.io/sig-storage/csi-attacher:v3.4.0
 
 
-## Step 5: Deploying the Configuration ConfigMap and Secrets
+## Step 5: Create **auristorfs-csi** Service Account
 
-ConfigMaps and Secrets must be created and deployed into your cluster prior to Initialization of the Node
+Prior to deploying the AuriStorFS Special Resource and/or the AuriStorFS CSI Driver, the  **auristorfs-csi** in the **auristorfs-client** namespace
+
+* The provided **bin/createServiceAccount** script applies the **rbac/csi-driver-rbac.yaml** file in the **auristorfs-client** namespace
+* Alternatively the service account may be created via your Kubernetes IAM 
+
+## Step 6: Deploying the Configuration ConfigMap and Secrets
+
+ConfigMaps and Secrets must be created and deployed into your cluster prior to Initialization of the Node.  
+
+**See** [VolumeMap ConfigMap and Secrets](examples/volumeMaps)
+
+These are provided as examples because your configuration and keytabs will be specific to your organization/installation
 
 
+## Step 7: Deploying the AuriStorFS Special Resource
 
-**See** [VolumeMap ConfigmMap and Secrets](examples/volumeMaps)
+The deployment of the AuriStorFS Special Resource can be done using the provided **bin/deploy** script
 
-## Step 6: Deploying the AuriStorFS KMOD/CSI SpecialResource ConfigMap
+* Note: The **deploy** script verifys the service account exists with a call to the **bin/createSpecialResource** script which is a no-op if the Service Account already exists
+
+Alternatively you may implement the following three steps in your organizational tooling
+
+## Step 7a. Apply RBAC for AuriStorFS CSI Drivers
+
+The AuriStorFS CSI Controller Pod requires various RBAC Roles, RoleBindings, ClusterRoles, ClusterRoleBindings which must be set prior to deploying the AuriStorFS SpecialResource
+
+	oc apply -n auristorfs-client -f rbac/csi-driver-rbac.yaml
+
+The **[bin/applyRBAC](bin/applyRBAC)** script is also provided which applies the **rbac/csi-driver-rbac.yaml** file to the **auristorfs-client** namespace
+
+
+## Step 7b: Deploying the AuriStorFS KMOD/CSI SpecialResource ConfigMap
 
 Pre-build ConfigMap objects containing the charts corresponding to the versions referenced  AuriStorFS KMOD/CSI SpecialResource object  (spec.chart.version)  are available under [chartVersions](chartVersions) with the latest version at [chartVersions/latest](chartVersions/latest).  These charts must be considered Read-Only and need be deployed prior to the AuriStorFS KMOD/CSI SpecialResource object.
+
+	oc create -f chartVersions/$CHART_VERSION/auristorfs-client-chart.yaml
 
 The latest version of the AuriStorFS KMOD/CSI SpecialResource charts will be found  at:
 
     chartVersions\latest\auristorfs-client-chart.yaml
-	
 
-A sample script for deploying these  directly from the ([auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.yaml))  file can be found at [bin/deploySpecialResourceChart](bin/deploySpecialResourceChart)
+The  **[bin/deploySpecialResourceChart](bin/deploySpecialResourceChart)** script is provided and may be used for deploying the correct version directly from the version tag in the ([auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.yaml)) file
 
-
-## Step 7:  Deploy the AuriStorFS KMOD/CSI SpecialResource object
+## Step 7c:  Deploy the AuriStorFS KMOD/CSI SpecialResource object
 
 oc create -f auristorfs-client-special-resource.yaml
+
+The  **[bin/deploySpecialResource](bin/deploySpecialResource)** script is provided which deploys the ([auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.yaml)) 
 
 # Mounting AuriStorFS Volumes as OpenShift Volumes
 The AuriStorFS CSI Driver enables mounting of AuriStorFS Volumes as Kuberntes Persistent, Dynamic or Ephemeral Volumes.

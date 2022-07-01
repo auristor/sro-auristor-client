@@ -10,9 +10,10 @@ spec:
   persistentVolumeReclaimPolicy: Delete
   capacity:
     storage: 5Mi    # IGNORED
+  storageClassName: manual
   csi:
     driver: auristorfs.csi.auristor.com
     volumeHandle: your-volume-pvx
     volumeAttributes:               # Attributes of the volume to publish. 
-      cell-name:  "your-cell.com"
-      volume-name: "your-volume"
+      cell-name:  auristor.com
+      volume-name: k8s.demo

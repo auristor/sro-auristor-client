@@ -1,6 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 SPECIAL_RESOURCE=${1:-auristorfs-client-special-resource.yaml}
+SPECIAL_RESOURCE_NAMESPACE=auristorfs-client
+
+## First Verify there are at least the minimal VolumeMaps
+oc get cm -n $SPECIAL_RESOURCE_NAMESPACE etc-yfs &>/dev/null
+
+if [ $? -ne 0 ]; then
+        echo "ERROR: Unable to deploy AuriStorFS Special Resource"
+        echo "    Unable to find ConfigMap etc-yfs in the auristorfs-client namespace"
+        echo "    Please check that the configmaps and secrets used for volume mappings have been created"
+        echo "   (See example under examples/volumeMaps) "
+        exit 1;
+fi
+
 
 oc create -f $SPECIAL_RESOURCE
 

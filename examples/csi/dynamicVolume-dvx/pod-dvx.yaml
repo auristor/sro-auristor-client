@@ -1,16 +1,15 @@
 kind: Pod
 apiVersion: v1
 metadata:
-  name: scx
+  name: dvx
 spec:
   terminationGracePeriodSeconds: 0
   containers:
-    - name: simple
-      image: alpine
+    - name: web
+      image: nginx
       imagePullPolicy: IfNotPresent
-      command: [ "sleep", "1000000"]      
       volumeMounts:
-      - mountPath: "/data"
+      - mountPath: "/usr/share/nginx/html"
         name: data
   volumes:
     - name: data

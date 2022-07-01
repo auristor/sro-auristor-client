@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+DRIVER_CONTAINER_DAEMONSET=$(oc get daemonset -n auristorfs-client -o name | grep driver-container)
+
+echo ""
+echo ===== DaemonSet corresponding to Driver Container is  $DRIVER_CONTAINER_DAEMONSET
+echo ""
+echo ===== Node Selector for DaemonSet is  $(oc get daemonset -n auristorfs-client -o json  | jq .items[0].spec.template.spec.nodeSelector | grep feature)
+echo ""

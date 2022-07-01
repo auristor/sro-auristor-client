@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euf -o pipefail
+
+echo === Deploying AuriStorFS Special Resource ===
+
+bin/createServiceAccount $@             # No-op if ServiceAccount already exists
+
+bin/applyRBAC $@
+bin/deploySpecialResourceChart $@
+bin/deploySpecialResource $@

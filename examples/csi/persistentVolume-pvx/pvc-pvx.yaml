@@ -12,3 +12,4 @@ spec:
   selector: 
     matchLabels: 
       volume: pv-pvx
+  storageClassName: manual

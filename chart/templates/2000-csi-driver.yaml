@@ -450,7 +450,7 @@ spec:
 {{- if eq .Values.runArgs.platform "openshift-container-platform" }}
 ---
 ####################################
-###     SRO Extra Permissions    ###
+###     CSI Extra Permissions    ###
 ####################################
 
 apiVersion: security.openshift.io/v1
@@ -459,7 +459,7 @@ metadata:
   annotations:
     kubernetes.io/description: Allow privileged
     release.openshift.io/create-only: "true"
-  name: auristor-csi-uber
+  name: auristorfs-csi-uber
 allowHostDirVolumePlugin: true
 allowHostIPC: false
 allowHostNetwork: false

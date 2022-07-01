@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+SRO_MANAGER_POD=$(oc get pod -n openshift-special-resource-operator -o name | grep special-resource-controller-manager | head -1)
+
+oc logs -f --tail=4 -n openshift-special-resource-operator $SRO_MANAGER_POD -c manager $2 $3 $4 $5
+
