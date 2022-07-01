@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 SRO_RELEASE_VERSION=${SRO_RELEASE_VERSION:-"0.0.2"}
 
 getVersion() {
@@ -13,11 +14,12 @@ MESSAGE=$3
 CHART_VERSION=$(getVersion $CHART)
 SR_VERSION=$(getVersion $SPECIAL_RESOURCE)
 
-
 if [ "$CHART_VERSION" != "$SR_VERSION" ]; then
     echo ERROR: Version Mismatch - $MESSAGE, $CHART_VERSION != $SR_VERSION
+    echo == CHART_VERSION: $CHART_VERSION
+    echo == SR_VERSION: $SR_VERSION
     echo == RESOURCE: $SPECIAL_RESOURCE
-    echo ===== CHART: $CHART
+    echo == CHART: $CHART
     exit 1
 fi
 

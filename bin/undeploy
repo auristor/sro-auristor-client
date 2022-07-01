@@ -1,9 +1,13 @@
 #!/bin/bash
 
+SPECIAL_RESOURCE_NAMESPACE=auristorfs-client
+
+SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+
 echo === Undeploying Auristor Special Resource ===
 
 oc delete specialresource auristorfs-client --ignore-not-found=true
-oc delete cm -n auristorfs-client auristorfs-client-chart --ignore-not-found=true
+oc delete cm -n $SPECIAL_RESOURCE_NAMESPACE auristorfs-client-chart --ignore-not-found=true
 
-
-
+$SCRIPTPATH/unapplyRBAC
+exit 0

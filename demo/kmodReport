@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+oc delete pod lsmod-yfs  -n sro-demo-watcher  &>/dev/null
+oc create namespace sro-demo-watcher  &>/dev/null
+
+rm -f /tmp/_lsModOut
+oc run -it --image=alpine --restart=Never --grace-period=0 --image-pull-policy=IfNotPresent lsmod-yfs -n sro-demo-watcher -- /sbin/lsmod >/tmp/_lsModOut
+
+echo  -n 'AuriStorFS yfs kernel module on Node (blank=none): '   
+oc get pod -n sro-demo-watcher -o=custom-columns=NODE:.spec.nodeName --no-headers   
+
+head -1 /tmp/_lsModOut 
+fgrep yfs /tmp/_lsModOut 
+
+rm -f /tmp/_lsModOut
+
+oc delete pod lsmod-yfs  -n sro-demo-watcher --force &>/dev/null
+# oc delete namespace sro-demo-watcher  &>/dev/null                 ### TAKES six seconds for little benefit

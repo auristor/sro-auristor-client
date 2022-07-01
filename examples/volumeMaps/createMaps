@@ -1,6 +1,12 @@
+#!/bin/bash
+set -euf -o pipefail
+SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+APP_ROOT=$( cd $SCRIPTPATH/.. ; pwd -P )
 
-oc create -n auristorfs-client cm etc-yfs  --from-file=yfs-client.conf
+SPECIAL_RESOURCE_NAMESPACE=auristorfs-client
 
-oc create -n auristorfs-client cm usr-share-yfs --from-file=cellservdb.conf
+oc create -n $SPECIAL_RESOURCE_NAMESPACE cm etc-yfs  --from-file=$SCRIPTPATH/yfs-client.conf
 
-oc create -n auristorfs-client secret generic etc-yfs-keytabs --from-file=my-keytab
+oc create -n $SPECIAL_RESOURCE_NAMESPACE cm usr-share-yfs --from-file=$SCRIPTPATH/cellservdb.conf
+
+oc create -n $SPECIAL_RESOURCE_NAMESPACE secret generic etc-yfs-keytabs --from-file=$SCRIPTPATH/my-keytab

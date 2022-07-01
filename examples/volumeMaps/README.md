@@ -1,9 +1,6 @@
 # MapVolume ConfigMaps and Secrets
 
-All Directories containing AuriStorFS cache manager configuration files are provided to the AuriTorFS KMOD/CSI SpecialResource as ConfigMap and Secrets
-
-
-**Note**: The mapVolume ConfigMaps and Secrets must be in the same namespace as the AuriStorFS KMOD/CSI SpecialResource, **aursitorfs-client**
+ConfigMaps and Secrets are used by the CSI Driver to populate configuration files in directories as designated in [auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.yaml)
 
 These samples corresponding to the volumeMap section in [auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.yaml)
 
@@ -25,11 +22,14 @@ These samples corresponding to the volumeMap section in [auristorfs-client-speci
 	         secret:
 	            secretName: etc-yfs-keytabs
 
-Sample Scripts have been provided to create/deploy the ConfigMap and Secrets
+
+**Note**: The mapVolume ConfigMaps and Secrets must be in the same namespace as the AuriStorFS KMOD/CSI SpecialResource, **aursitorfs-client**
+
+Sample Scripts are provided here to create/deploy the ConfigMap and Secrets
 
 
 | Script | Description |
 |--|--|
-| createMaps | Creates configmaps and secrets directly from files |
-| deleteMaps | delete these configmaps and secrets |
+| [createMaps](createMaps) | Creates configmaps and secrets directly from files |
+| [deleteMaps](deleteMaps) | Delete these configmaps and secrets |
 

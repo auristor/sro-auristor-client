@@ -56,7 +56,7 @@ The csiDriver section of the Helm [values.yaml](values.yaml) file is configured 
 
 The AuriStorFS CSI Driver is deployed using HELM.  An examp
 
-	helm install -n auristorfs-client auristorfs-csi-driver .
+	helm install -n $SPECIAL_RESOURCE_NAMESPACE auristorfs-csi-driver .
 
 
 # Mounting AuriStorFS Volumes as Kubernetes Volumes

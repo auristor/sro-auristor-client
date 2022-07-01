@@ -1,26 +1,33 @@
-ROOT=$(pwd)
+#!/usr/bin/env bash
+set -euf -o pipefail
+SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+APP_ROOT=$( cd $SCRIPTPATH/.. ; pwd -P )
 
 getVersion() {
+  echo Grepping: $(grep version $1)
+  grep version $1
   grep version $1 | awk '{ print $2 }' 
 }
 
-CHART=$ROOT/chart/Chart.yaml
+SPECIAL_RESOURCE_NAMESPACE=auristorfs-client
+
+CHART=$APP_ROOT/chart/Chart.yaml
 CHART_VERSION=$(grep version $CHART | awk '{ print $2 }')
 
-SPECIAL_RESOURCE=$ROOT/auristorfs-client-special-resource.yaml
+SPECIAL_RESOURCE=$APP_ROOT/auristorfs-client-special-resource.yaml
 
 echo == BUILDING Helm Charts ConfigMap for Special Resource version: $CHART_VERSION
 
-$ROOT/bin/verifyVersions $CHART $SPECIAL_RESOURCE "Prototype Special Resource version does not match Chart version"
+$APP_ROOT/bin/verifyVersions $CHART $SPECIAL_RESOURCE "Prototype Special Resource version does not match Chart version"
 
 if [ "$?" -ne 0 ]; then
     echo ===== Special Resource Chart build failed
     exit 1
 fi
 
-SOURCE_ROOT=$ROOT/chart
-CHART_VERSION_ROOT=$ROOT/chartVersions/$CHART_VERSION
-LATEST_VERSION_ROOT=$ROOT/chartVersions/latest
+SOURCE_ROOT=$APP_ROOT/chart
+CHART_VERSION_ROOT=$APP_ROOT/chartVersions/$CHART_VERSION
+LATEST_VERSION_ROOT=$APP_ROOT/chartVersions/latest
 BUILD_ROOT=$CHART_VERSION_ROOT/build
 
 rm -rf $CHART_VERSION_ROOT
@@ -30,7 +37,7 @@ rm -rf $BUILD_ROOT
 mkdir -p $CHART_VERSION_ROOT
 mkdir -p $BUILD_ROOT
 
-cp $ROOT/auristorfs-client-special-resource.yaml  $CHART_VERSION_ROOT
+cp $APP_ROOT/auristorfs-client-special-resource.yaml  $CHART_VERSION_ROOT
 
 cp $SOURCE_ROOT/README.md $CHART_VERSION_ROOT/README.md
 sed -i s/latest/$CHART_VERSION/g $CHART_VERSION_ROOT/README.md
@@ -41,12 +48,12 @@ cp -r $SOURCE_ROOT/templates $BUILD_ROOT
 cd $BUILD_ROOT
 helm package .   # Create auristorfs-client-$CHART_VERSION.tgz
 
-helm repo index . --url=cm://auristorfs-client/auristorfs-client-chart -n auristorfs-client
+helm repo index . --url=cm://auristorfs-client/auristorfs-client-chart -n $SPECIAL_RESOURCE_NAMESPACE
 
 # Create ConfigMap object
 oc create cm  \
           auristorfs-client-chart \
-          -n auristorfs-client  \
+          -n $SPECIAL_RESOURCE_NAMESPACE  \
           --from-file=index.yaml \
           --from-file=auristorfs-client-$CHART_VERSION.tgz \
           --dry-run=client  \
@@ -55,6 +62,4 @@ oc create cm  \
 rm -rf $BUILD_ROOT
 
 cp -rf $CHART_VERSION_ROOT $LATEST_VERSION_ROOT
-
-cd $ROOT
 

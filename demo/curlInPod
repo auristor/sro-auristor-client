@@ -1,0 +1,2 @@
+
+oc exec -it $1 -- /usr/bin/curl http://localhost/$2
