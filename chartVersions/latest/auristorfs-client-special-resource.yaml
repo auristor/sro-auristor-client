@@ -7,7 +7,7 @@ spec:
 
   chart:
     name: auristorfs-client
-    version: 0.0.3
+    version: 0.0.4
     repository:
       name: auristorfs-client-chart
       url: cm://auristorfs-client/auristorfs-client-chart
@@ -29,6 +29,11 @@ spec:
 
       yfsCache: /var/cache/yfs         ## Host Path to the local cache
       mapVolumes:
+        - label: yfs-cache
+          target: /var/cache/yfs
+          hostPath: 
+            path: /var/cache/yfs
+            
         - label: etc-yfs
           target: /etc/yfs
           configMap:
@@ -39,10 +44,16 @@ spec:
           configMap:
             configMapName: usr-share-yfs
 
+        # - label: etc-yfs-keytabs
+        #   target: /etc/yfs-keytabs
+        #   secret:
+        #     secretName: etc-yfs-keytabs
+        
         - label: etc-yfs-keytabs
           target: /etc/yfs-keytabs
-          secret:
-            secretName: etc-yfs-keytabs
+          hostPath:
+            path: /etc/yfs-keytabs           
+
 
     csiDriver:
       image:       ###   Registry and Version Values
