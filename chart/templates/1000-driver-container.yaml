@@ -109,15 +109,23 @@ spec:
         node-role.kubernetes.io/worker: ""
         feature.node.kubernetes.io/kernel-version.full: "{{.Values.kernelFullVersion}}"
       volumes:
-      - name: yfs-cache
+      # - name: yfs-cache
+      #   hostPath: 
+      #     path: {{ .Values.kmodDriverContainer.yfsCache }}
+
+      {{- range .Values.kmodDriverContainer.mapVolumes }}
+      {{- if .hostPath }}
+      - name: {{ .label }}
         hostPath: 
-          path: {{ .Values.kmodDriverContainer.yfsCache }}
+          path: {{ .path }}
+      {{ end -}}  
+      {{- end -}}          
   
       {{- range .Values.kmodDriverContainer.mapVolumes }}
       {{- if .configMap }}
       - name: {{ .label }}
         configMap: 
-          name: {{ .label }}
+          name: {{ .configMapName }}
       {{ end -}}  
       {{- end -}}
 
@@ -125,6 +133,6 @@ spec:
       {{- if .secret }}
       - name: {{ .label }}
         secret: 
-          secretName: {{ .label }}
+          secretName: {{ .secretName }}
       {{ end -}}  
       {{- end -}}

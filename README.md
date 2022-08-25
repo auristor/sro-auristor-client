@@ -82,7 +82,7 @@ In [auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.
 
 		   chart:
 		      name: auristor-client
-		      version: 0.0.3
+		      version: 0.0.4
 		      repository:
 		         name: auristorfs-client-chart
 		         url: cm://auristorfs-client/auristor-client-chart
