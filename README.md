@@ -101,21 +101,32 @@ In [auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.
 		            auristorKmodVersion: "2021.05-15"
 		            kmodImagePullPolicy: Always
 
-		         yfsCache: /var/cache/yfs         ## Host Path to the local cache
-
 		         mapVolumes:
-		         - label: etc-yfs
-		            target: /etc/yfs
-		            configMap:
-		               configMapName: etc-yfs 
-		         - label: usr-share-yfs
-		            target: /usr/share/yfs
-		            configMap:
-		               configMapName: usr-share-yfs
-		         - label: etc-yfs-keytabs
-		            target: /etc/yfs-keytabs
-		            secret:
-		               secretName: etc-yfs-keytabs
+					- label: yfs-cache
+					target: /var/cache/yfs
+					hostPath: 
+						path: /var/cache/yfs
+						
+					- label: etc-yfs
+					target: /etc/yfs
+					configMap:
+						name: etc-yfs
+
+					- label: usr-share-yfs
+					target: /usr/share/yfs
+					configMap:
+						name: usr-share-yfs
+
+					# - label: etc-yfs-keytabs
+					#   target: /etc/yfs-keytabs
+					#   secret:
+					#     name: etc-yfs-keytabs
+					
+					- label: etc-yfs-keytabs
+					target: /etc/yfs-keytabs
+					hostPath:
+						path: /etc/yfs-keytabs           
+
 
 		      csiDriver:
 		         image:       ###   Registry and Version Values
@@ -136,22 +147,31 @@ In [auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.
 
 ##  KMOD Driver Container Configuration
 
-The AuriStorFS SpecialResource guarantees that a cache manager is running on each node in the OpenShift cluster.   A  "DriverContainer"  is run as a Pod on each node. The DriverContainer is responsibeich installs the AuriStorFS cache manager. The AuriStorFS Cache Manager installed through the Driver Container uses the same configuration files, keytabs, etc and in the same way that it would be configured any machine.  
+The AuriStorFS SpecialResource guarantees that a cache manager is running on each node in the OpenShift cluster.   A  "DriverContainer"  is run as a Pod on each node. The DriverContainer installs the AuriStorFS cache manager. The AuriStorFS Cache Manager installed through the Driver Container uses the same configuration files, keytabs, etc and in the same way that it would be configured any machine.  
 
 AuriStor provides DriverContainer Images for each AuriStorFS/Linux-kernel version pair.  It is only necessary to configure the SpecialResource with the desired AuriStorFS KMOD version.  SRO (via NFD) provides the kernel version to the SpecialResource which automatically selects the appropriate AuriStorFS DriverContainer image for the node.
 
-All necessary AuriStorFS cache manager configuration files (yfs-client.conf, cellservdb.conf, etc, keytabs, etc) are mapped into the DriverContainer on a per-directory basis via  Kubernetes ConfigMap and Secret objects (see mapVolumes fields)
+All necessary AuriStorFS cache manager configuration files (yfs-client.conf, cellservdb.conf, etc, keytabs, etc) and the yfs-cache locations are provided as mapped volumes into the DriverContainer on a per-directory basis for where the respecitve files are expected. These volume mappings are specified in the set.kmodDriverContainer.mapVolumes section.  Each entry in that section specifies one volume map that can either be of type hostPath, configMap, or secret.  
+
 
 ###  **set.kmodDriverContainer** Fields
 -   **image:**
 	-   **auristorRegistry**: The Container Registry where the Driver Container Images are located
 	-   **auristorKmodVersion**: The AuriStorFS kernel module version  
--   **yfsCache**:  The path on the host node where the persistent cache files will be stored ( Typically **/var/cache/yfs**).
 -   **mapVolumes**:  Configuration directory file contents provided as ConfigMaps and Secrets
 	-    **label**: Used within the Pod to associate volumeMounts with volumes
     - **target**: Path in the Driver Container for the mapped directory's files
-    - **configMap.configMapName**: The ConfigMap object name associated with this entry
-    - **secret.secretName**: The Secret object name that is associated with this entry
+	- **hostPath.path**: The ConfigMap object name associated with this entry
+    - **configMap.name**: The ConfigMap object name associated with this entry
+    - **secret.name**: The Secret object name that is associated with this entry
+
+For hostPaths, the constituent files would be expected to have been pre-installed and found under a hostPath on the nodes which had been pre-configured and/or pre-populated on that node using a OpenShift MachineConfig objects.
+* The yfs-cache must always be a hostPath directory
+* The key-tabs volume may be either a hostPath or a secret, depending upon whether you are using a shared keytabs across all nodes or are using per-node keytabs
+
+Alternatively files can via injected into the nodes via ConfigMap or Secret objects 
+* The etc-yfs and usr-share-yfs volumes would typically be specified as configMaps.
+* The key-tabs volume may be either a hostPath or a secret, depending upon whether you are using a shared keytabs across all nodes or are using per-node keytabs
 
 **More on VolumeMaps:** Example Values and other information about preparing the ConfigMap and Secrets corresponding to volumeMaps can be found at [examples/volumeMaps](examples/volumeMaps).  It is important to note that the mapVolume ConfigMaps and Secrets must be in the same namespace as the AuriStorFS KMOD/CSI SpecialResource
 

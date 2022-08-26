@@ -98,8 +98,8 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
-        - name: yfs-cache
-          mountPath: /var/cache/yfs
+        # - name: yfs-cache
+        #   mountPath: /var/cache/yfs
           {{- range .Values.kmodDriverContainer.mapVolumes }}
         - name: {{ .label }}
           mountPath: {{ .target }}
@@ -117,7 +117,7 @@ spec:
       {{- if .hostPath }}
       - name: {{ .label }}
         hostPath: 
-          path: {{ .path }}
+          path: {{ .hostPath.path }}
       {{ end -}}  
       {{- end -}}          
   
@@ -125,7 +125,7 @@ spec:
       {{- if .configMap }}
       - name: {{ .label }}
         configMap: 
-          name: {{ .configMapName }}
+          name: {{ .configMap.name }}
       {{ end -}}  
       {{- end -}}
 
@@ -133,6 +133,6 @@ spec:
       {{- if .secret }}
       - name: {{ .label }}
         secret: 
-          secretName: {{ .secretName }}
+          secretName: {{ .secret.name}}
       {{ end -}}  
       {{- end -}}
