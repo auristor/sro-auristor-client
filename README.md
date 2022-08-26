@@ -161,17 +161,17 @@ All necessary AuriStorFS cache manager configuration files (yfs-client.conf, cel
 -   **mapVolumes**:  Configuration directory file contents provided as ConfigMaps and Secrets
 	-    **label**: Used within the Pod to associate volumeMounts with volumes
     - **target**: Path in the Driver Container for the mapped directory's files
-	- **hostPath.path**: The ConfigMap object name associated with this entry
+	- **hostPath.path**: The local path on the node associated with this entry
     - **configMap.name**: The ConfigMap object name associated with this entry
     - **secret.name**: The Secret object name that is associated with this entry
 
 For hostPaths, the constituent files would be expected to have been pre-installed and found under a hostPath on the nodes which had been pre-configured and/or pre-populated on that node using a OpenShift MachineConfig objects.
 * The yfs-cache must always be a hostPath directory
-* The key-tabs volume may be either a hostPath or a secret, depending upon whether you are using a shared keytabs across all nodes or are using per-node keytabs
+* The key-tabs volume may be either a hostPath or a secret, depending upon whether you are using shared keytabs across all nodes or are using per-node keytabs
 
 Alternatively files can via injected into the nodes via ConfigMap or Secret objects 
 * The etc-yfs and usr-share-yfs volumes would typically be specified as configMaps.
-* The key-tabs volume may be either a hostPath or a secret, depending upon whether you are using a shared keytabs across all nodes or are using per-node keytabs
+* The key-tabs volume may be either a hostPath or a secret, depending upon whether you are using shared keytabs across all nodes or are using per-node keytabs
 
 **More on VolumeMaps:** Example Values and other information about preparing the ConfigMap and Secrets corresponding to volumeMaps can be found at [examples/volumeMaps](examples/volumeMaps).  It is important to note that the mapVolume ConfigMaps and Secrets must be in the same namespace as the AuriStorFS KMOD/CSI SpecialResource
 
