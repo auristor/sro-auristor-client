@@ -23,7 +23,7 @@ spec:
     kmodDriverContainer:
       image:
         auristorRegistry: "ghcr.io/auristor"
-        auristorKmodVersion: "2021.05-15"
+        auristorKmodVersion: "2021.05-20"
         kmodImagePullPolicy: Always
         terminationGracePeriodSeconds: 2
 
