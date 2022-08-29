@@ -7,7 +7,7 @@ spec:
 
   chart:
     name: auristorfs-client
-    version: 0.0.4
+    version: 0.0.5
     repository:
       name: auristorfs-client-chart
       url: cm://auristorfs-client/auristorfs-client-chart
