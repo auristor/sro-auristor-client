@@ -110,7 +110,7 @@ spec:
               name: app-var
 
         - name: csi-attacher
-          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/csi-attacher:v3.4.0
+          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/csi-attacher:v3.5.0
           imagePullPolicy: {{ .Values.csiDriver.image.k8sSigStorageImagePullPolicy | quote }}
           securityContext:
             privileged: true          
@@ -122,7 +122,7 @@ spec:
             name: controller-socket-dir   
             
         - name: csi-provisioner
-          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/csi-provisioner:v3.1.0
+          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/csi-provisioner:v3.2.1
           imagePullPolicy: {{ .Values.csiDriver.image.k8sSigStorageImagePullPolicy | quote }}
           args:
             - -v=5
@@ -144,7 +144,7 @@ spec:
               name: controller-socket-dir   
 
         - name: liveness-probe
-          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/livenessprobe:v2.5.0
+          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/livenessprobe:v2.7.0
           imagePullPolicy: {{ .Values.csiDriver.image.k8sSigStorageImagePullPolicy | quote }}
           securityContext:
             privileged: true              

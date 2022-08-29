@@ -94,7 +94,7 @@ spec:
               mountPath: /root/appVar
 
         - name: node-driver-registrar
-          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/csi-node-driver-registrar:v2.4.0
+          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/csi-node-driver-registrar:v2.5.1
           imagePullPolicy: {{ .Values.csiDriver.image.k8sSigStorageImagePullPolicy | quote }}
           securityContext:
             privileged: true
@@ -119,7 +119,7 @@ spec:
             mountPath: /registration/            
 
         - name: liveness-probe
-          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/livenessprobe:v2.5.0
+          image: {{ .Values.csiDriver.image.k8sSigStorageRegistry }}/livenessprobe:v2.7.0
           imagePullPolicy: {{ .Values.csiDriver.image.k8sSigStorageImagePullPolicy | quote }}
           securityContext:
             privileged: true          

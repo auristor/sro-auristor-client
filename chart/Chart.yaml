@@ -3,5 +3,5 @@ name: auristorfs-client
 description: AuriStor Client Support for KMOD and CSI
 icon: https://avatars.githubusercontent.com/u/213364
 type: application
-version: 0.0.4     # Chart iterative number
-appVersion: 2022.02-2   # Semantic Application Version
+version: 0.0.5    # Chart iterative number
+appVersion: 2022.08-2   # Semantic Application Version
