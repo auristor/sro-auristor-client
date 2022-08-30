@@ -1,38 +1,27 @@
 
-# AuriStorFS KMOD/CSI SpecialResource Version latest
+# AuriStorFS KMOD/CSI Special Resource Chart
 
-## Location
+The [buildSpecialResourceChart](../bin/buildSpecialResourceChart) script creates a ConfigMap corresponding to this chart and stores it at the current Chart version location corresponding to the .spec.chart.version field in [auristorfs-client-chart.yaml](../auristorfs-client-chart.yaml)
 
-**Public URL to the AuriStorFS KMOD/CSI SpecialResource ConfigMap for this chart**
+## CSI SideCar Images Used by this Chart
 
-[https://github.com/auristor/sro-auristor-client/blob/main/chartVersions/latest/auristorfs-client-chart.yaml](https://github.com/auristor/sro-auristor-client/blob/main/chartVersions/latest/auristorfs-client-chart.yaml)
+Specific Container Images, particularly for use by the AuriStorFS CSI Driver, are referenced that are required by this version of the Chart.
 
- (Repo Link: [auristorfs-client-chart.yaml](auristorfs-client-chart.yaml) )
-
-**Example AuriStorFS KMOD/CSI SpecialResource for this Chart version**
-
-[auristorfs-special-resource.yaml](auristorfs-special-resource.yam)
-
-## Images Used by this Chart
-
-It is highly recommended that these be copied into your organizational Container Registry  
+It is highly recommended that these container Images be copied into your organizational Container Registry  
 
 | Container| Container Registry | Image Name | TAG |
 |-------|-----|---|--|
-| AuristorFS CSI Driver | auristorfs-csi | auristorfs-csi | 2022-02.2 |
-| External Provisioner | k8s.gcr.io/sig-storage |csi-provisioner | v3.1.0 |
-| External Attacher | k8s.gcr.io/sig-storage |csi-attacher | v3.4.0 |
-| Node Driver Registrar | k8s.gcr.io/sig-storage |csi-node-driver-registrar | v2.4.0 |
-| Liveness Probe | k8s.gcr.io/sig-storage |livenessprobe | v2.5.0 |
+| External Provisioner | k8s.gcr.io/sig-storage |csi-provisioner | v3.2.1 |
+| External Attacher | k8s.gcr.io/sig-storage |csi-attacher | v3.5.0 |
+| Node Driver Registrar | k8s.gcr.io/sig-storage |csi-node-driver-registrar | v2.5.1 |
+| Liveness Probe | k8s.gcr.io/sig-storage |livenessprobe | v2.7.0 |
 
 ## Fully Qualified Container Images  
 
-	ghcr.io/auristor/auristorfs-csi:2022-02.2
+	k8s.gcr.io/sig-storage/csi-attacher:v3.5.0
 
-	k8s.gcr.io/sig-storage/csi-attacher:v3.4.0
+	k8s.gcr.io/sig-storage/csi-provisioner:v3.2.1
 
-	k8s.gcr.io/sig-storage/csi-provisioner:v3.1.0
+	k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.1
 
-	k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.4.0
-
-	k8s.gcr.io/sig-storage/livenessprobe:v2.5.0
+	k8s.gcr.io/sig-storage/livenessprobe:v2.7.0
