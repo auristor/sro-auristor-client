@@ -5,7 +5,9 @@ SPECIAL_RESOURCE=${1:-auristorfs-client-special-resource.yaml}
 CHART_VERSION=$(grep version $SPECIAL_RESOURCE | awk '{ print $2 }')
 SPECIAL_RESOURCE_NAMESPACE=auristorfs-client
 
-echo === Deploying Auristor Special Resource: $SPECIAL_RESOURCE '(Resourse uses Chart Version: '$CHART_VERSION')'
+echo === Preparing to deploy Chart ConfigMap 
+echo === Chart Version extracted from Special Resource: $SPECIAL_RESOURCE
+echo === Extracted Chart Version: $CHART_VERSION
 
 oc get cm -n $SPECIAL_RESOURCE_NAMESPACE  auristorfs-client-chart &>/dev/null
 
@@ -21,4 +23,6 @@ oc get namespace $SPECIAL_RESOURCE_NAMESPACE 1>/dev/null 2> /dev/null
   exit 1
 fi 
 
-oc create -f chartVersions/$CHART_VERSION/auristorfs-client-chart.yaml
+echo === Deploying Chart ConfigMap Version: $CHART_VERSION
+echo    oc create -f chartVersions/$CHART_VERSION/auristorfs-client-chart.yaml
+        oc create -f chartVersions/$CHART_VERSION/auristorfs-client-chart.yaml

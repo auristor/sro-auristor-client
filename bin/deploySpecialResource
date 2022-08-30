@@ -14,6 +14,7 @@ if [ $? -ne 0 ]; then
         exit 1;
 fi
 
-
-oc create -f $SPECIAL_RESOURCE
+echo === Deploying Special Resource: $SPECIAL_RESOURCE
+echo    oc create -f $SPECIAL_RESOURCE
+        oc create -f $SPECIAL_RESOURCE
 

@@ -67,8 +67,8 @@ In [auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.
 
 | Section |Description |
 |----|---|
-| chart |  <UL><LI> The version of the AuriStorFS KMOD/CSI Helm Chart to use <LI>A URL reference to a ConfigMap object that contains the Helm Charts that will be used</UL> ConfigMaps for every Helm chart version are provided by AuriStorFS (see section on deplpoying the ConfigMap) |
-| namespace | All Kubernetes Objects (DaemonSets, StatefulSets, Pods, ConfigMaps, etc.) created by the SpecialResource's Helm charts will be placed in this namespace|
+| chart | The **.spec.chart.version** field specifies which version of the AuriStor Special Resource Chart to be used.  This ***MUST*** match the deployed Special Resource Chart ConfigMap. See 7b below on Deploying the AuriStorFS Special Resource Chart ConfigMap  |
+| namespace | All Kubernetes Objects (DaemonSets, StatefulSets, Pods, ConfigMaps, etc.) created by the SpecialResource's Helm charts will be placed in this namespace  Recommended namespace name is: auristorfs-client|
 | set | The set section contains all the AuriStorFS specific SpecialResource Helm 'Values' |
 
 [auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.yaml) 
@@ -183,7 +183,7 @@ The AuriStorFS CSI Driver is versioned independently from the AuriStorFS kmod ve
 
 -   **image:**
 	-  **auristorRegistry**: The Container Registry where the AuriStorFS CSI Container Images are located
-	-   **auristorCsiVersion**: The AuriStorFS CSI Driver version
+	-   **auristorCsiVersion**: The AuriStorFS CSI Driver version.
 	-   **csiDriverImagePullPolicy**: The AuriStorFS CSI Driver Container Image Pull Policy
 	-   **k8sSigStorageRegistry**: The Container Registry for the Kubernetes SigStorage CSI Sidecar Container Images
 	-   **.csiDriverImagePullPolicy**: The CSI Sidecar Container Image Pull Policy 
@@ -197,27 +197,43 @@ The AuriStorFS CSI Driver is versioned independently from the AuriStorFS kmod ve
 
 It is Strongly Recommended that you copy all Container Images used by the AuriStorFS KMOD/CSI SpecialResource into an organizational private container registry.
 
-The locations for these container images are derived from the fields in the SpecialResource (under 'set')
-
 ---
 
 **AuristorFS KMOD DriverContainer Image**
 
-Templated Format:
-**&lt;kmodDriverContainer.image.auristorRegistry&gt;**/auristor-kmod-**&lt;kmodDriverContainer.image.auristorKmodVersion&gt;**:
-**&lt;Node Kernel Module Version&gt;**
+DriverContainer Images must be available for each of the Linux kernel versions that may be running on your OpenShift Cluster for the corresponding DriverContainer Version.
 
-Example:
+* **Registry**: specified in Specified in the field **.spec.set.kmodDriverContainer.auristorRegistry**
+* **DriverContainer Version**: specified in Specified in the field **.spec.set.kmodDriverContainer.auristorKmodVersion**
+* **Template For Container Image**: <BR><BR>&nbsp;&nbsp;&nbsp;
+**&lt;kmodDriverContainer.image.auristorRegistry&gt;**/auristor-kmod-**&lt;kmodDriverContainer.image.auristorKmodVersion&gt;**:***&lt;linux kernel version&gt;***
 
-    ghcr.io/auristor/auristor-kmod-2021.05-15:4.18.0-305.el8.x86_64
+Note the encoding of the tag for the respective ***&lt;linux kernel version&gt;***.  For example for an OpenShift Node with:
+
+```
+	$ uname -r
+	4.18.0-305.49.1.el8_4.x86_64
+```
+
+The corresponding DriverContainer Image tag for the ***&lt;linux kernel version&gt;*** would be 
+```
+4.18.0-305.el8.x86_64
+```
+A fully qualified example for the AuriStor DriverContainer verison 2021.05-20 and for the Linux kernel 4.18.0-305.49.1.el8_4.x86_64 :
+
+    ghcr.io/auristor/auristor-kmod-2021.05-20:4.18.0-305.el8.x86_64
+
 
 ---
 **AuristorFS CSI Driver Image**
 
-Templated Format:
-**&lt;csiDriver.image.auristorRegistry&gt;**/auristorfs-csi:**&lt;csiDriver.image.auristorCsiVersion&gt;**:
+* **Registry**: specified in Specified in the field **.spec.set.csiDriver.auristorRegistry**
+* **Version**: specified in Specified in the field **.spec.set.csiDriver.auristorCsiVersion**
+* **Template For Container Image**: <BR><BR>&nbsp;&nbsp;&nbsp;
+**&lt;csiDriver.image.auristorRegistry&gt;**/auristorfs-csi:**&lt;csiDriver.image.auristorCsiVersion&gt;**
 
-Example:
+
+Example CSI Driver Container Image for CSI Driver Version 2022.02-2
 
     ghcr.io/auristor/auristorfs-csi:2022.02-2
 ---
@@ -226,13 +242,20 @@ Example:
 
 The CSI Driver Pods leverage sidecar containers images provided by the Kubernetes SigStorage.   
 
-The specific sidecars and sidecar container image tags are embedded in the AuriStorFS KMOD/CSI SpecialResource chart.  
+The specific sidecars and sidecar container image tags are embedded in the AuriStorFS KMOD/CSI SpecialResource chart version
 
-Detailed information on required images are found in the README of the corresponding AuriStorFS KMOD/CSI SpecialResource version (see [chartVersions](chartVersions)/&lt;version&gt;/README.md or the [README for the latest version](chart/README.md)
+Detailed information on all required CSI Sidecar container images can be found in the corresponding README of the AuriStorFS KMOD/CSI SpecialResource version (see [chartVersions](chartVersions)/***&lt;chart version&gt;***/README.md 
 
-Example:
+For Example, from the documentation for [chart version 0.0.5](chartVersions/0.0.5)
 
-    k8s.gcr.io/sig-storage/csi-attacher:v3.4.0
+	k8s.gcr.io/sig-storage/csi-attacher:v3.5.0
+
+	k8s.gcr.io/sig-storage/csi-provisioner:v3.2.1
+
+	k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.1
+
+	k8s.gcr.io/sig-storage/livenessprobe:v2.7.0
+
 
 
 ## Step 5: Create **auristorfs-csi** Service Account
@@ -270,13 +293,18 @@ The **[bin/applyRBAC](bin/applyRBAC)** script is also provided which applies the
 
 ## Step 7b: Deploying the AuriStorFS KMOD/CSI SpecialResource ConfigMap
 
-Pre-build ConfigMap objects containing the charts corresponding to the versions referenced  AuriStorFS KMOD/CSI SpecialResource object  (spec.chart.version)  are available under [chartVersions](chartVersions) with the latest version at [chartVersions/latest](chartVersions/latest).  These charts must be considered Read-Only and need be deployed prior to the AuriStorFS KMOD/CSI SpecialResource object.
+Pre-build ConfigMap objects containing the charts corresponding to the versions referenced  AuriStorFS KMOD/CSI SpecialResource object  (spec.chart.version)  are available under [chartVersions](chartVersions) .  These charts must be considered Read-Only and need be deployed prior to the AuriStorFS KMOD/CSI SpecialResource object.
+
+The version of the deployed chart MUST match the .spec.chart.version field in the xxxxx
+
+To avoid mis-matching, if the location of your AuriStorFS Special Resource yaml file is located at SPECIAL_RESOURCE, the chart version can be extracted via: 
+
+	CHART_VERSION=$(grep version $SPECIAL_RESOURCE | awk '{ print $2 }')
+
+The ConfigMap for that Chart can then be deployed via:
 
 	oc create -f chartVersions/$CHART_VERSION/auristorfs-client-chart.yaml
 
-The latest version of the AuriStorFS KMOD/CSI SpecialResource charts will be found  at:
-
-    chartVersions\latest\auristorfs-client-chart.yaml
 
 The  **[bin/deploySpecialResourceChart](bin/deploySpecialResourceChart)** script is provided and may be used for deploying the correct version directly from the version tag in the ([auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.yaml)) file
 

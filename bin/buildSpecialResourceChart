@@ -27,20 +27,17 @@ fi
 
 SOURCE_ROOT=$APP_ROOT/chart
 CHART_VERSION_ROOT=$APP_ROOT/chartVersions/$CHART_VERSION
-LATEST_VERSION_ROOT=$APP_ROOT/chartVersions/latest
 BUILD_ROOT=$CHART_VERSION_ROOT/build
 
 rm -rf $CHART_VERSION_ROOT
-rm -rf $LATEST_VERSION_ROOT
 rm -rf $BUILD_ROOT
 
 mkdir -p $CHART_VERSION_ROOT
 mkdir -p $BUILD_ROOT
 
 cp $APP_ROOT/auristorfs-client-special-resource.yaml  $CHART_VERSION_ROOT
-
 cp $SOURCE_ROOT/README.md $CHART_VERSION_ROOT/README.md
-sed -i s/latest/$CHART_VERSION/g $CHART_VERSION_ROOT/README.md
+
 
 cp $SOURCE_ROOT/Chart.yaml $BUILD_ROOT
 cp -r $SOURCE_ROOT/templates $BUILD_ROOT
@@ -60,6 +57,3 @@ oc create cm  \
           -o yaml >$CHART_VERSION_ROOT/auristorfs-client-chart.yaml
 
 rm -rf $BUILD_ROOT
-
-cp -rf $CHART_VERSION_ROOT $LATEST_VERSION_ROOT
-

@@ -12,7 +12,7 @@
 ## Developer Scripts
 | Script | Description |
 |---|---|
-|	buildSpecialResourceChart	|	Builds the Special Resource Chart and updates latest under /chartVersions.  This is not necessary for a user-deployment of the special Resource	|
+|	buildSpecialResourceChart	|	Builds the Special Resource Chart based upon. The version is extracted from the chart version from the .spec.chart.version field in [auristorfs-client-special-resource.yaml](../auristorfs-client-special-resource.yaml).  |
 |	redeploy	|	Developer Script. Single command undeploy followed by deploy	|
 |	rebuildAndDeploy	|	Developer Script.  Undeploys SR, Rebuilds SR Chart, and redeploys SR	|
 
