@@ -1,0 +1,2 @@
+kubectl exec -it evx-root -- ls  /usr/share/nginx/html
+kubectl exec -it evx-root -- cat /usr/share/nginx/html/.@mount/auristor.com/k8s.demo/hello

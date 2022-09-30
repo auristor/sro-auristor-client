@@ -1,0 +1,2 @@
+kubectl exec -it dvx -- ls  /usr/share/nginx/html
+kubectl exec -it dvx -- cat /usr/share/nginx/html/.@mount/auristor.com/k8s.demo/hello

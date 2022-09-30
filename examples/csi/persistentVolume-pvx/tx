@@ -1,5 +1,0 @@
-kubectl delete -f  pod-pvx.yaml &
-kubectl delete -f pvc-pvx.yaml &
-kubectl delete -f pv-pvx.yaml &
-sleep 2
-echo All objects being deleted in the background

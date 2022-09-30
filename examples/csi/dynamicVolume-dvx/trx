@@ -1,0 +1,5 @@
+kubectl delete -f  pod-dvx.yaml &
+kubectl delete -f pvc-dvx-root.yaml &
+kubectl delete -f storageClass-dvx-root.yaml &
+sleep 2
+echo All objects being deleted in the background

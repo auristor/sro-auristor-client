@@ -1,13 +1,11 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: storage-class-dvx
+  name: storage-class-dvx-root
   labels:
       demo: auristor
 provisioner: auristorfs.csi.auristor.com
 reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
 parameters:
-  mount-type: volume
-  cell-name:  auristor.com
-  volume-name: k8s.demo
+  mount-type: root

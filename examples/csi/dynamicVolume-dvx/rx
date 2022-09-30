@@ -1,3 +1,6 @@
+
+fgrep mount-type storageClass-dvx.yaml
+
 kubectl apply -f storageClass-dvx.yaml
 kubectl apply -f pvc-dvx.yaml
 kubectl apply -f pod-dvx.yaml

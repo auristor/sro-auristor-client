@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-svx
+  labels:
+    volume: pv-svx
+spec:
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Delete
+  capacity:
+    storage: 5Mi    # IGNORED
+  storageClassName: manual
+  csi:
+    driver: auristorfs.csi.auristor.com
+    volumeHandle: your-volume-svx
+    volumeAttributes:               # Attributes of the volume to publish. 
+      mount-type: volume
+      cell-name:  auristor.com
+      volume-name: k8s.demo

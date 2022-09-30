@@ -89,6 +89,11 @@ spec:
                   fieldPath: spec.nodeName
             - name: CSI_DOMAIN_SOCKET
               value: "/csi/csi.sock"
+            - name: IS_MOUNT_SELINUX
+              value: {{ .Values.csiDriver.afsMount.mountSeLinuxFS | default "false" | quote }}
+            - name: AURISTORFS_MOUNT_OPTIONS
+              value: {{ .Values.csiDriver.afsMount.auristorfsMountOptions | default " " | quote }}
+
           ports:
           # - containerPort: 9898
           #   name: healthz
@@ -245,6 +250,11 @@ spec:
                   fieldPath: spec.nodeName
             - name: CSI_DOMAIN_SOCKET
               value: "/csi/csi.sock"
+            - name: IS_MOUNT_SELINUX
+              value: {{ .Values.csiDriver.afsMount.mountSeLinuxFS | default "false" | quote }}
+            - name: AURISTORFS_MOUNT_OPTIONS
+              value: {{ .Values.csiDriver.afsMount.auristorfsMountOptions | default " " | quote }}
+
           securityContext:
             privileged: true
           # ports:

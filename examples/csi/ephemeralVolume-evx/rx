@@ -1,1 +1,3 @@
+fgrep mount-type pod-evx.yaml
+
 kubectl apply -f pod-evx.yaml

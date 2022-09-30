@@ -1,7 +1,7 @@
 kind: Pod
 apiVersion: v1
 metadata:
-  name: pvx
+  name: svx
 spec:
   terminationGracePeriodSeconds: 0
   containers:
@@ -14,4 +14,4 @@ spec:
   volumes:
     - name: data
       persistentVolumeClaim:
-        claimName: pvc-pvx
+        claimName: pvc-svx

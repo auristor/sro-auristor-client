@@ -82,7 +82,7 @@ In [auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.
 
 		   chart:
 		      name: auristor-client
-		      version: 0.0.5
+		      version: 0.0.6
 		      repository:
 		         name: auristorfs-client-chart
 		         url: cm://auristorfs-client/auristor-client-chart
@@ -108,40 +108,48 @@ In [auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.
 						path: /var/cache/yfs
 						
 					- label: etc-yfs
-					target: /etc/yfs
-					configMap:
-						name: etc-yfs
+						target: /etc/yfs
+						configMap:
+							name: etc-yfs
 
 					- label: usr-share-yfs
-					target: /usr/share/yfs
-					configMap:
-						name: usr-share-yfs
+						target: /usr/share/yfs
+						configMap:
+							name: usr-share-yfs
 
 					# - label: etc-yfs-keytabs
-					#   target: /etc/yfs-keytabs
-					#   secret:
+					#	  target: /etc/yfs-keytabs
+					#     secret:
 					#     name: etc-yfs-keytabs
 					
 					- label: etc-yfs-keytabs
-					target: /etc/yfs-keytabs
-					hostPath:
-						path: /etc/yfs-keytabs           
+						target: /etc/yfs-keytabs
+						hostPath:
+							path: /etc/yfs-keytabs           
 
 
 		      csiDriver:
-		         image:       ###   Registry and Version Values
-		            auristorRegistry: ghcr.io/auristor
-		            auristorCsiVersion: 2022.02-2
-		            csiDriverImagePullPolicy: Always
-		            k8sSigStorageRegistry: k8s.gcr.io/sig-storage
-		            k8sSigStorageImagePullPolicy: Always
+		        image:       ###   Registry and Version Values
+					auristorRegistry: ghcr.io/auristor
+					auristorCsiVersion: 2022.09-1
+					csiDriverImagePullPolicy: Always
+					k8sSigStorageRegistry: k8s.gcr.io/sig-storage
+					k8sSigStorageImagePullPolicy: Always
 
-		         cacheManager:       ###  Cache Manager Values
+		        cacheManager:       ###  Cache Manager Values
 		            defaultCacheManager: auristor
 
-		         logging:
+				afsMount:
+					mountSeLinuxFS: "true"
+					auristorfsMountOptions: "-o context=system_u:object_r:container_file_t:s0"       
+
+		        logging:
 		            logLevel: INFO  # (DEBUG, INFO, WARNING, ERROR, or FATAL)
 
+				debug: 
+					debugShowMounts: false
+					debugShowExecs: false
+					debugShowCsiRequests: false
 ---
 
 
@@ -189,8 +197,16 @@ The AuriStorFS CSI Driver is versioned independently from the AuriStorFS kmod ve
 	-   **.csiDriverImagePullPolicy**: The CSI Sidecar Container Image Pull Policy 
 -   **cacheManager:**
 	- **defaultCacheManager**: "auristor" or "kafs"
+-   **afsMount:**
+	- **mountSeLinuxFS**: Expictly mount SeLinux (true/false)
+	- **auristorfsMountOptions**: Mount Options for AuriStor FS Root mounting
 -   **logging:**
 	- **logLevel**: DEBUG, INFO, WARNING, ERROR, or FATAL
+-   **debug:**
+	- **debugShowMounts**: Log mount commands and results	
+	- **debugShowExecs**: Log all 'exec' commands and results
+	- **debugShowCsiRequests**: Log all CSI requests and responses
+
 
 
 ## Step 4: Copying Container Images to Private Registry

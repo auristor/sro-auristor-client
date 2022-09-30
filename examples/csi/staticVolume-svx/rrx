@@ -1,0 +1,3 @@
+kubectl apply -f pv-svx-root.yaml
+kubectl apply -f pvc-svx-root.yaml
+kubectl apply -f pod-svx.yaml

@@ -1,3 +1,0 @@
-kubectl apply -f pv-pvx.yaml
-kubectl apply -f pvc-pvx.yaml
-kubectl apply -f pod-pvx.yaml

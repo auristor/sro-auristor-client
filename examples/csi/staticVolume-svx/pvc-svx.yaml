@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-svx
+spec:
+  volumeName: pv-svx
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Mi  # Ignored
+  selector: 
+    matchLabels: 
+      volume: pv-svx
+  storageClassName: manual
