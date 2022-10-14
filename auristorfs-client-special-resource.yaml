@@ -20,6 +20,8 @@ spec:
     runArgs:
       platform: "openshift-container-platform"
 
+    nodeSelector: { auristor.com/auristorfs-group: group-1 }
+
     kmodDriverContainer:
       image:
         auristorRegistry: "ghcr.io/auristor"

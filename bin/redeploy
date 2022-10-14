@@ -1,7 +1,24 @@
 #!/bin/bash
-set -euf -o pipefail
 
-echo == Performing a full delete, rebuild and deploy
+SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+APP_ROOT=$( cd $SCRIPTPATH/.. ; pwd -P )
 
-bin/undeploy  $@
-bin/deploy    $@
+echo === Deleting and Restarting Special Resource
+
+$SCRIPTPATH/verifyEnvironment
+
+if [ $? -ne 0 ]; then
+       echo === "ERROR: Invalid Environment Variables... exiting"
+       exit 1;
+fi
+
+$SCRIPTPATH/undeploy
+
+if [ $? -ne 0 ]; then
+       echo === "ERROR: Undeploy Failed.  Will not attempt to redeploy"
+       exit 1;
+fi
+
+$SCRIPTPATH/deploy
+
+

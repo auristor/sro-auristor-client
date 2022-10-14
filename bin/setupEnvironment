@@ -1,0 +1,54 @@
+#!/bin/bash
+
+if [ "$#" -lt 1 ]; then
+    echo === No SPECIAL_RESOURCE_FILE specified
+    echo === can not proced, exiting
+    exit 1
+else
+    unset SPECIAL_RESOURCE_FILE
+    unset SPECIAL_RESOURCE_NAME
+    unset SPECIAL_RESOURCE_NAMESPACE
+    unset SPECIAL_RESOURCE_CREATE_MAP_COMMAND
+    unset SPECIAL_RESOURCE_DELETE_MAP_COMMAND
+fi
+
+if [ -f "$1" ]; then 
+    export SPECIAL_RESOURCE_FILE=$1
+    echo === SPECIAL_RESOURCE_FILE: $SPECIAL_RESOURCE_FILE
+else
+    echo === ERROR: SPECIAL_RESOURCE_FILE does not exist: $1
+    exit 1
+fi
+
+export SPECIAL_RESOURCE_NAME=$( cat $SPECIAL_RESOURCE_FILE | yq '.metadata.name')
+echo ====== Extracted SPECIAL_RESOURCE_NAME: $SPECIAL_RESOURCE_NAME
+
+export SPECIAL_RESOURCE_NAMESPACE=$( cat $SPECIAL_RESOURCE_FILE | yq '.spec.namespace')
+echo ====== Extracted SPECIAL_RESOURCE_NAMESPACE: $SPECIAL_RESOURCE_NAMESPACE
+
+
+shift
+if [ "$#" -lt 1 ]; then
+    echo === No SPECIAL_RESOURCE_CREATE_MAP_COMMAND specified
+    echo === can not proced, exiting
+    exit 1
+else
+    export SPECIAL_RESOURCE_CREATE_MAP_COMMAND=$1
+    echo === SPECIAL_RESOURCE_CREATE_MAP_COMMAND set to: $SPECIAL_RESOURCE_CREATE_MAP_COMMAND
+fi
+
+shift
+if [ "$#" -lt 1 ]; then
+    echo === No SPECIAL_RESOURCE_DELETE_MAP_COMMAND specified
+    echo === can not proced, exiting
+    exit 1
+else
+    export SPECIAL_RESOURCE_DELETE_MAP_COMMAND=$1
+    echo === SPECIAL_RESOURCE_DELETE_MAP_COMMAND set to: $SPECIAL_RESOURCE_DELETE_MAP_COMMAND
+fi
+
+# Helpers for other unrelated scripts (ie can be deleted)
+export N=$SPECIAL_RESOURCE_NAMESPACE
+
+
+

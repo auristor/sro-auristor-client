@@ -12,10 +12,10 @@ Scripts To:
 
 Example Objects 
 
-| Mount Type | Pod | PV |
+| Mount Type | Pod | PVC | PV |
 |---| :--- | :--- | :--- |
-| Volume Mount | pod-svx.yaml | pv-svx.yaml |
-| Root Mount | pod-svx.yaml | pv-svx.yaml |yaml |
+| Volume Mount | pod-svx.yaml | pvc-svx.yaml | pv-svx.yaml |
+| Root Mount | pod-svx.yaml | pvc-svx.yaml | pv-svx-root.yaml |
 
 Scripts
 | Mount Type | Run Example | Exec in Pod | Terminate Example |

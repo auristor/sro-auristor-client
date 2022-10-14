@@ -1,9 +1,7 @@
 #!/bin/bash
-set -euf -o pipefail
+
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
 APP_ROOT=$( cd $SCRIPTPATH/.. ; pwd -P )
-
-SPECIAL_RESOURCE_NAMESPACE=auristorfs-client
 
 oc create -n $SPECIAL_RESOURCE_NAMESPACE cm etc-yfs  --from-file=$SCRIPTPATH/yfs-client.conf
 

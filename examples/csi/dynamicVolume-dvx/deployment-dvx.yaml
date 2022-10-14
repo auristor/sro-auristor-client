@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: dvdx
+  name: dvdx
+spec:
+  replicas: 12
+  selector:
+    matchLabels:
+      app: dvdx
+  template:
+    metadata:
+      labels:
+        app: dvdx
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: web
+          image: nginx
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+          - mountPath: "/usr/share/nginx/html"
+            name: data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: pvc-dvx
+          
+

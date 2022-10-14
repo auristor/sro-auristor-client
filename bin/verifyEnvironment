@@ -1,0 +1,123 @@
+#!/bin/bash
+
+displayValue() {
+
+    if 	[ "$SHOW_VALUES" = "true" ]; then
+        echo $@
+    fi
+}
+
+echo === Verifying Environment
+
+displayValue  "    SPECIAL_RESOURCE_FILE: " $SPECIAL_RESOURCE_FILE
+if [ -z "$SPECIAL_RESOURCE_FILE" ]; then 
+    echo === "ERROR:" SPECIAL_RESOURCE_FILE environment variable is not set
+    echo === "ERROR:" CAN NOT Proceed, Errors in Environment
+    exit 1
+else 
+  if [ ! -f $SPECIAL_RESOURCE_FILE ]; then
+    echo === SPECIAL_RESOURCE_FILE "'"$SPECIAL_RESOURCE_FILE"'" does not exist
+    echo === CAN NOT Proceed, Errors in Environment
+    exit 1
+  fi
+fi
+
+displayValue "    SPECIAL_RESOURCE_NAME: " $SPECIAL_RESOURCE_NAME
+if [ -z "$SPECIAL_RESOURCE_NAME" ]; then 
+    echo === "ERROR:" SPECIAL_RESOURCE_NAME environment variable is not set
+    echo === "ERROR:" CAN NOT Proceed, Errors in Environment
+    exit 1
+fi
+
+displayValue "    SPECIAL_RESOURCE_NAMESPACE: " $SPECIAL_RESOURCE_NAMESPACE
+if [ -z "$SPECIAL_RESOURCE_NAMESPACE" ]; then 
+    echo === "ERROR:" SPECIAL_RESOURCE_NAMESPACE environment variable is not set
+    echo === "ERROR:" CAN NOT Proceed, Errors in Environment
+    exit 1
+fi
+
+displayValue "    SPECIAL_RESOURCE_CREATE_MAP_COMMAND: " $SPECIAL_RESOURCE_CREATE_MAP_COMMAND
+if [ -z "$SPECIAL_RESOURCE_CREATE_MAP_COMMAND" ]; then 
+    echo === "ERROR:" SPECIAL_RESOURCE_CREATE_MAP_COMMAND environment variable is not set
+    echo === "ERROR:" CAN NOT Proceed, Errors in Environment, Errors in Environment
+    exit 1
+fi
+
+displayValue "    SPECIAL_RESOURCE_DELETE_MAP_COMMAND: " $SPECIAL_RESOURCE_DELETE_MAP_COMMAND
+if [ -z "$SPECIAL_RESOURCE_DELETE_MAP_COMMAND" ]; then 
+    echo === "ERROR:" SPECIAL_RESOURCE_DELETE_MAP_COMMAND environment variable is not set
+    echo === "ERROR:" CAN NOT Proceed, Errors in Environment
+    exit 1
+fi
+
+
+inconsistencyFound() {
+    echo === 'ERROR: Inconsistency in SPECIAL_RESOURCE_FILE' $SPECIAL_RESOURCE_FILE
+    echo === 'ERROR:' $1
+}
+
+inconsistentValues() {
+    while [ $# -gt 0 ]; do
+        echo '===           ' $1:  $2
+        shift 
+        shift
+    done
+}
+
+EXPECTED_SPECIAL_RESOURCE_NAME=$(yq '.metadata.name' $SPECIAL_RESOURCE_FILE)
+EXPECTED_SPECIAL_RESOURCE_NAMESPACE=$(yq '.spec.namespace' $SPECIAL_RESOURCE_FILE)
+
+CHART_NAME=$(yq '.spec.chart.name' $SPECIAL_RESOURCE_FILE)
+CHART_REPO_NAME=$(yq '.spec.chart.repository.name' $SPECIAL_RESOURCE_FILE)
+CHART_URL=$(yq '.spec.chart.repository.url' $SPECIAL_RESOURCE_FILE)
+
+EXPECTED_CHART_URL='cm://'$SPECIAL_RESOURCE_NAME'/'$SPECIAL_RESOURCE_NAME-chart
+EXPECTED_CHART_REPO_NAME=$SPECIAL_RESOURCE_NAME-chart
+
+
+if [ "$SPECIAL_RESOURCE_NAME" != "$SPECIAL_RESOURCE_NAMESPACE" ]; then
+    inconsistencyFound 'SPECIAL_RESOURCE_NAME and SPECIAL_RESOURCE_NAMESPACE must be the same'
+    inconsistentValues SPECIAL_RESOURCE_NAME $SPECIAL_RESOURCE_NAME  SPECIAL_RESOURCE_NAMESPACE $SPECIAL_RESOURCE_NAMESPACE
+    echo === "ERROR:" CAN NOT Proceed, Errors in Environment
+    exit 1
+fi
+
+if [ "$SPECIAL_RESOURCE_NAME" != "$EXPECTED_SPECIAL_RESOURCE_NAME" ]; then  ## SHOUND NEVER OCCUR but....
+    inconsistencyFound '.metadata.name and SPECIAL_RESOURCE_NAME must be the same'
+    inconsistentValues .metadata.name $SPECIAL_RESOURCE_NAME  SPECIAL_RESOURCE_NAME $SPECIAL_RESOURCE_NAME
+    echo === "ERROR:" CAN NOT Proceed, Errors in Environment
+    exit 1
+fi
+
+
+if [ "$SPECIAL_RESOURCE_NAMESPACE" != "$EXPECTED_SPECIAL_RESOURCE_NAMESPACE" ]; then  ## SHOUND NEVER OCCUR, but....
+    inconsistencyFound '.spec.namespace and SPECIAL_RESOURCE_NAMESPACE must be the same'
+    inconsistentValues .spec.namespace $SPECIAL_RESOURCE_NAMESPACE  SPECIAL_RESOURCE_NAMESPACE $SPECIAL_RESOURCE_NAMESPACE
+    echo === "ERROR:" CAN NOT Proceed, Errors in Environment
+    exit 1
+fi
+
+if [ "$CHART_NAME" != "$SPECIAL_RESOURCE_NAME" ]; then
+    inconsistencyFound '.spec.chart.name and SPECIAL_RESOURCE_NAME must be the same'
+    inconsistentValues .spec.chart.name $CHART_NAME  SPECIAL_RESOURCE_NAME $SPECIAL_RESOURCE_NAME
+    echo === "ERROR:" CAN NOT Proceed, Errors in Environment
+    exit 1
+fi
+
+
+if [ "$CHART_REPO_NAME" != "$EXPECTED_CHART_REPO_NAME" ]; then
+    inconsistencyFound '.spec.chart.repository.name should be "$SPECIAL_RESOURCE_NAME-chart" must be the same'
+    inconsistentValues .spec.chart.repostitory.name $CHART_REPO_NAME  'Expected Chart Repo Name' $EXPECTED_CHART_REPO_NAME
+    echo === "ERROR:" CAN NOT Proceed, Errors in Environment
+    exit 1
+fi
+
+if [ "$CHART_URL" != "$EXPECTED_CHART_URL" ]; then
+    inconsistencyFound '.spec.chart.repository.url is incorrect'
+    inconsistentValues .spec.chart.repostitory.url $CHART_URL  'Expected Chart URL' $EXPECTED_CHART_URL
+    echo === "ERROR:" CAN NOT Proceed, Errors in Environment
+    exit 1
+fi
+
+echo "=== Environment OK"
+exit 0

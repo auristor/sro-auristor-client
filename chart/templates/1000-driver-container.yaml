@@ -58,6 +58,7 @@ spec:
       labels:
         app: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}
     spec:
+      terminationGracePeriodSeconds: 10
       serviceAccount: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}
       serviceAccountName: {{.Values.specialresource.metadata.name}}-{{.Values.groupName.driverContainer}}
       containers:
@@ -136,3 +137,8 @@ spec:
           secretName: {{ .secret.name}}
       {{ end -}}  
       {{- end -}}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}      

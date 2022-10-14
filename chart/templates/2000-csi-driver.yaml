@@ -7,6 +7,7 @@
 {{- if ne .Values.runArgs.platform "openshift-container-platform" }}
 ---
 {{ end }}
+
 ####################################
 ###    Auristor CSI Controller   ###
 ####################################
@@ -35,19 +36,6 @@ data:
   debugShowMounts: {{ .Values.csiDriver.debug.debugShowMounts | default "false" | quote }}
   debugShowExecs: {{ .Values.csiDriver.debug.debugShowExecs | default "false" | quote }}
   {{ end }}
----
-
-apiVersion: storage.k8s.io/v1
-kind: CSIDriver
-metadata:
- name: auristorfs.csi.auristor.com
-spec:
-  volumeLifecycleModes:
-  - Persistent
-  - Ephemeral
-  podInfoOnMount: true
-  attachRequired: true
-
 ---
 
 kind: StatefulSet
@@ -180,6 +168,12 @@ spec:
         - name: app-var
           configMap:
             name: auristorfs-csi-node-config
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
 
 
 
@@ -353,6 +347,10 @@ spec:
           configMap:
             name: auristorfs-csi-node-config
 
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
 #################################################
 ### FROM FILE: templates/volumeManager.yaml
@@ -450,7 +448,10 @@ spec:
           #   name: healthz
           #   protocol: TCP
 
-
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
 #################################################
 ### FROM FILE: templates/sroPermissions.yaml
@@ -469,7 +470,7 @@ metadata:
   annotations:
     kubernetes.io/description: Allow privileged
     release.openshift.io/create-only: "true"
-  name: auristorfs-csi-uber
+  name: auristorfs-csi-{{.Values.specialresource.spec.namespace}}
 allowHostDirVolumePlugin: true
 allowHostIPC: false
 allowHostNetwork: false
@@ -499,3 +500,179 @@ volumes:
 - secret
 - configMap
 {{ end }}
+
+---
+
+#######################################
+### Auristor CSI Roles and Bindings ###
+#######################################
+
+##################################
+### External Provisioner Roles ###
+##################################
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-provisioner-r
+rules:
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "watch", "list", "delete", "update", "create"]
+# Permissions for CSIStorageCapacity are only needed enabling the publishing
+# of storage capacity information.
+- apiGroups: ["storage.k8s.io"]
+  resources: ["csistoragecapacities"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+# The GET permissions below are needed for walking up the ownership chain
+# for CSIStorageCapacity. They are sufficient for deployment via
+# StatefulSet (only needs to get Pod) and Deployment (needs to get
+# Pod and then ReplicaSet to find the Deployment).
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get"]
+- apiGroups: ["apps"]
+  resources: ["replicasets"]
+  verbs: ["get"]
+
+---
+#################################
+###  External Attacher Roles  ###
+#################################
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-attacher-r
+rules:
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "watch", "list", "delete", "update", "create"]
+
+---
+##################################
+###  Controller Role Bindings  ###
+##################################
+
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-provisioner-rb
+subjects:
+  - kind: ServiceAccount
+    name: auristorfs-csi
+    namespace: {{.Values.specialresource.spec.namespace}}
+roleRef:
+  kind: Role
+  name: auristorfs-csi-external-provisioner-r
+  apiGroup: rbac.authorization.k8s.io
+  
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-attacher-role-rb
+subjects:
+  - kind: ServiceAccount
+    name: auristorfs-csi
+    namespace: {{.Values.specialresource.spec.namespace}}
+roleRef:
+  kind: Role
+  name: auristorfs-csi-external-attacher-r
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+###############################################
+### Auristor CSI Cluster Roles and Bindings ###
+###############################################
+
+##########################################
+### External Provisioner Cluster Roles ###
+##########################################
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-provisioner-cr-{{.Values.specialresource.spec.namespace}}
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch"]
+
+
+---
+#########################################
+###  External Attacher Cluster Roles  ###
+#########################################
+
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-attacher-cr-{{.Values.specialresource.spec.namespace}}
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments/status"]
+    verbs: ["patch"]
+
+
+---
+##########################################
+###  Controller Role Cluster Bindings  ###
+##########################################
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-provisioner-crb-{{.Values.specialresource.spec.namespace}}
+subjects:
+  - kind: ServiceAccount
+    name: auristorfs-csi
+    namespace: {{.Values.specialresource.spec.namespace}}
+roleRef:
+  kind: ClusterRole
+  name: auristorfs-csi-external-provisioner-cr-{{.Values.specialresource.spec.namespace}}
+  apiGroup: rbac.authorization.k8s.io
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auristorfs-csi-external-attacher-crb-{{.Values.specialresource.spec.namespace}}
+subjects:
+  - kind: ServiceAccount
+    name: auristorfs-csi
+    namespace: {{.Values.specialresource.spec.namespace}}
+roleRef:
+  kind: ClusterRole
+  name: auristorfs-csi-external-attacher-cr-{{.Values.specialresource.spec.namespace}}
+  apiGroup: rbac.authorization.k8s.io
+
+

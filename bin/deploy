@@ -1,10 +1,66 @@
 #!/bin/bash
-set -euf -o pipefail
 
-echo === Deploying AuriStorFS Special Resource ===
+SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+APP_ROOT=$( cd $SCRIPTPATH/.. ; pwd -P )
 
-bin/createServiceAccount $@             # No-op if ServiceAccount already exists
+echo === Deploying AuriStorFS Special Resource into Namespace: $SPECIAL_RESOURCE_NAMESPACE ===
 
-bin/applyRBAC $@
-bin/deploySpecialResourceChart $@
-bin/deploySpecialResource $@
+$SCRIPTPATH/verifyEnvironment
+
+if [ $? -ne 0 ]; then
+       echo === "ERROR: Invalid Environment Variables... exiting"
+       exit 1;
+fi
+
+
+oc get SpecialResource $SPECIAL_RESOURCE_NAME >/dev/null 2>/dev/null
+
+if [ $? -eq 0 ]; then
+       echo === "WARNING: Special Resource already exists: " $SPECIAL_RESOURCE_NAME
+       echo ======  Special Resource must first be removed via "'"undeploy"'" or "'"redeploy"'"
+       exit 1;
+fi
+
+CSI_DRIVER_FILE=$APP_ROOT/auristorfs-csi-driver.yaml 
+
+oc get CsiDriver auristorfs.csi.auristor.com >/dev/null 2>/dev/null
+
+if [ $? -ne 0 ]; then
+       echo === Creating AuriStor CSIDriver Object from file $CSI_DRIVER_FILE
+       oc create -f $CSI_DRIVER_FILE
+else
+       echo === CSI Driver Object already existed
+fi
+
+$SCRIPTPATH/addExtraPermissions
+
+$SCRIPTPATH/createServiceAccount
+
+if [ $? -ne 0 ]; then
+       echo === "ERROR: ServiceAccount creation failed ... exiting"
+       exit 1;
+fi
+
+echo === "Executing create maps command:" $SPECIAL_RESOURCE_CREATE_MAP_COMMAND
+$SPECIAL_RESOURCE_CREATE_MAP_COMMAND
+
+if [ $? -ne 0 ]; then
+       echo === "ERROR: Map creation failed ... exiting"
+       exit 1;
+fi
+
+$SCRIPTPATH/buildSpecialResourceChart
+
+if [ $? -ne 0 ]; then
+       echo === "ERROR: Special Resource Chart build failed... exiting"
+       exit 1;
+fi
+
+$SCRIPTPATH/deploySpecialResource
+
+if [ $? -ne 0 ]; then
+       echo === "ERROR: Special Resource Deployment failed ... exiting"
+       exit 1;
+fi
+
+echo === Special Resource Deployed: $SPECIAL_RESOURCE_NAME

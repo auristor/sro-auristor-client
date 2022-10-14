@@ -1,0 +1,5 @@
+
+
+
+kubectl exec -it dvdx -- ls  /usr/share/nginx/html
+kubectl exec -it dvdx -- cat /usr/share/nginx/html/hello

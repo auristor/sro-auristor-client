@@ -1,0 +1,5 @@
+
+
+
+kubectl exec -it evdx -- ls  /usr/share/nginx/html
+kubectl exec -it evdx -- cat /usr/share/nginx/html/hello

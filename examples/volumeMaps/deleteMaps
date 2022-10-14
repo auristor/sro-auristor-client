@@ -1,9 +1,7 @@
 #!/bin/bash
 
-SPECIAL_RESOURCE_NAMESPACE=auristorfs-client
+oc delete -n $SPECIAL_RESOURCE_NAMESPACE cm etc-yfs 2>/dev/null
 
-oc delete -n $SPECIAL_RESOURCE_NAMESPACE cm etc-yfs 
+oc delete -n $SPECIAL_RESOURCE_NAMESPACE cm usr-share-yfs  2>/dev/null
 
-oc delete -n $SPECIAL_RESOURCE_NAMESPACE cm usr-share-yfs
-
-oc delete -n $SPECIAL_RESOURCE_NAMESPACE secret etc-yfs-keytabs
+oc delete -n $SPECIAL_RESOURCE_NAMESPACE secret etc-yfs-keytabs  2>/dev/null

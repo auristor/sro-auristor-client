@@ -1,0 +1,5 @@
+#!/bin/bash
+
+oc get serviceaccount,cm,role,roleBinding -n  $SPECIAL_RESOURCE_NAMESPACE -o name --ignore-not-found
+oc get clusterRole,clusterRoleBinding,securityContextConstraints -n  $SPECIAL_RESOURCE_NAMESPACE -o name --ignore-not-found | grep $SPECIAL_RESOURCE_NAME
+oc get specialresource $SPECIAL_RESOURCE_NAME -o name --ignore-not-found

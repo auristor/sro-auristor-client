@@ -1,25 +1,27 @@
-#!/bin/bash
+# #!/bin/bash
 
+SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+APP_ROOT=$( cd $SCRIPTPATH/.. ; pwd -P )
 
-SRO_RELEASE_VERSION=${SRO_RELEASE_VERSION:-"0.0.2"}
+CHART_FILE=$APP_ROOT/chart/Chart.yaml
+CHART_VERSION=$( cat $CHART_FILE | yq '.version')
 
-getVersion() {
-  grep version $1 | awk '{ print $2 }' 
-}
+SPECIAL_RESOURCE_CHART_VERSION=$( cat $SPECIAL_RESOURCE_FILE | yq '.spec.chart.version')
 
-CHART=$1
-SPECIAL_RESOURCE=$2
-MESSAGE=$3
+echo === Verifying that Helm Chart Version Matches Special Resource Chart Version : $SPECIAL_RESOURCE_CHART_VERSION
+if [ -z "$SPECIAL_RESOURCE_CHART_VERSION" ]; then 
+    echo === SPECIAL_RESOURCE_CHART_VERSION has not been set.
+    echo === CAN NOT Proceed
+    exit 1
+fi
 
-CHART_VERSION=$(getVersion $CHART)
-SR_VERSION=$(getVersion $SPECIAL_RESOURCE)
-
-if [ "$CHART_VERSION" != "$SR_VERSION" ]; then
-    echo ERROR: Version Mismatch - $MESSAGE, $CHART_VERSION != $SR_VERSION
+if [ "$CHART_VERSION" != "$SPECIAL_RESOURCE_CHART_VERSION" ]; then
+    echo ERROR: Version Mismatch - $MESSAGE, $CHART_VERSION != $SPECIAL_RESOURCE_CHART_VERSION
     echo == CHART_VERSION: $CHART_VERSION
-    echo == SR_VERSION: $SR_VERSION
-    echo == RESOURCE: $SPECIAL_RESOURCE
-    echo == CHART: $CHART
+    echo == SPECIAL_RESOURCE_CHART_VERSION: $SPECIAL_RESOURCE_CHART_VERSION
+    echo == SPECIAL_RE
+    SOURCE_FILE: $SPECIAL_RESOURCE_FILE
+    echo == CHART_FILE: $CHART_FILE
     exit 1
 fi
 

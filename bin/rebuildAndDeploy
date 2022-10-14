@@ -1,8 +1,0 @@
-#!/bin/bash
-set -euf -o pipefail
-
-echo == Performing a full delete, rebuild and deploy
-
-bin/undeploy  $@
-bin/buildSpecialResourceChart $@
-bin/deploy $@

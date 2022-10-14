@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: auristorfs-csi-extra-permission-crb
+  resourceVersion: "29568155"
+  uid: 350772fe-06c1-4b6b-bc47-b95aa45a7826
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: auristorfs-csi-extra-permission-cr
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: openshift-special-resource-operator

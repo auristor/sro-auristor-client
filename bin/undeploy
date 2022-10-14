@@ -1,13 +1,41 @@
 #!/bin/bash
 
-SPECIAL_RESOURCE_NAMESPACE=auristorfs-client
-
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
 
 echo === Undeploying Auristor Special Resource ===
 
-oc delete specialresource auristorfs-client --ignore-not-found=true
-oc delete cm -n $SPECIAL_RESOURCE_NAMESPACE auristorfs-client-chart --ignore-not-found=true
+$SCRIPTPATH/verifyEnvironment
 
-$SCRIPTPATH/unapplyRBAC
-exit 0
+if [ $? -ne 0 ]; then
+       echo === "ERROR: Invalid Environment Variables... exiting"
+       exit 1;
+fi
+
+oc get specialresource $SPECIAL_RESOURCE_NAME >/dev/null 2>/dev/null
+
+if [ $? -ne 0 ]; then
+       echo === Special Resource Not Found "'"$SPECIAL_RESOURCE_NAME"'"
+else
+    echo === Deleting Previous Special Resource: $SPECIAL_RESOURCE_NAME
+    oc delete specialresource $SPECIAL_RESOURCE_NAME 
+fi
+
+echo "=== Deleting Namespace and all SpecialResource supporting Namespace Objects:" $SPECIAL_RESOURCE_NAMESPACE
+oc delete namespace $SPECIAL_RESOURCE_NAMESPACE   2>/dev/null
+
+ if [ "$?" -ne 0 ]; then
+  echo === Namespace  "'"$SPECIAL_RESOURCE_NAMESPACE"'" not found, it probably was already deleted
+fi 
+
+echo === "Executing delete maps command:" $SPECIAL_RESOURCE_DELETE_MAP_COMMAND
+$SPECIAL_RESOURCE_DELETE_MAP_COMMAND
+
+$SCRIPTPATH/verifyPristine
+
+ if [ "$?" -ne 0 ]; then
+    echo === undepoy failed.  There are still remaining SpecialResource Objects
+    exit 1
+else
+    echo === SpecialResource: "'"$SPECIAL_RESOURCE_NAME"'" and SpecialResource namespace "'"$SPECIAL_RESOURCE_NAMESPACE"'" have been deleted
+    exit 0
+fi 

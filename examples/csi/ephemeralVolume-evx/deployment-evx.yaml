@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: evdx
+  name: evdx
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: evdx
+  template:
+    metadata:
+      labels:
+        app: evdx
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: web
+          image: nginx
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+          - mountPath: "/usr/share/nginx/html"
+            name: data
+      volumes:
+        - name: data
+          csi:
+            driver: auristorfs.csi.auristor.com
+            volumeAttributes:
+              mount-type: volume
+              cell-name:  auristor.com
+              volume-name: k8s.demo            
+

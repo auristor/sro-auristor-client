@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+APP_ROOT=$( cd $SCRIPTPATH/.. ; pwd -P )
+
+echo === Checking for the presence of the required extra CSI permissions
+echo ======= Must also validate that it references the correct SPECIAL_RESOURCE_OPERATOR_NAMESPACE
+
+export SPECIAL_RESOURCE_OPERATOR_NAMESPACE=$(kg pod -A  | grep special-resource-controller-manager | awk '{ print $1 }')
+echo ======= SPECIAL_RESOURCE_OPERATOR_NAMESPACE: $SPECIAL_RESOURCE_OPERATOR_NAMESPACE
+
+oc get ClusterRoleBinding auristorfs-csi-extra-permission-crb >/dev/null 2>/dev/null
+
+if [ $? -eq 0 ]; then
+        echo ===== ClusterRoleBinding auristorfs-csi-extra-permission-crb exists
+        FOUND_SPECIAL_RESOURCE_OPERATOR_NAMESPACE=$( oc get ClusterRoleBinding auristorfs-csi-extra-permission-crb -o yaml | yq .subjects[0].namespace )
+
+        echo ======== auristorfs-csi-extra-permission-crb uses SPECIAL_RESOURCE_OPERATOR_NAMESPACE: $FOUND_SPECIAL_RESOURCE_OPERATOR_NAMESPACE
+
+        if [ "$SPECIAL_RESOURCE_OPERATOR_NAMESPACE" = "$FOUND_SPECIAL_RESOURCE_OPERATOR_NAMESPACE" ]; then
+             echo ======== ClusterRoleBinding uses the correct SPECIAL_RESOURCE_OPERATOR_NAMESPACE
+             echo ======== Nothing to do.
+             exit 0
+        else 
+            echo ===== ClusterRoleBinding auristorfs-csi-extra-permission-crb uses a different SPECIAL_RESOURCE_OPERATOR_NAMESPACE
+            echo ===== deleteing auristorfs-csi-extra-permission-crb
+            oc delete ClusterRoleBinding auristorfs-csi-extra-permission-crb
+        fi
+else
+        echo ===== ClusterRoleBinding auristorfs-csi-extra-permission-crb does not exist
+fi   
+
+echo ===== Must re-write the namespace for the SRO default ServiceAccount in extraPermissionsClusterRoleBinding.yaml
+echo ===== Re-writing the namespace to "'"$SPECIAL_RESOURCE_OPERATOR_NAMESPACE"'" 
+yq -i '.subjects[0].namespace = strenv(SPECIAL_RESOURCE_OPERATOR_NAMESPACE)' $APP_ROOT/extraPermissionsClusterRoleBinding.yaml
+
+echo ===== Applying Extra CSI Permission Objects
+oc apply -f $APP_ROOT/extraPermissionsClusterRole.yaml
+oc apply -f $APP_ROOT/extraPermissionsClusterRoleBinding.yaml
+
+
+
+

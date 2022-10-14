@@ -1,0 +1,5 @@
+fgrep mount-type deployment-dvx.yaml
+
+kubectl apply -f storageClass-dvx.yaml
+kubectl apply -f pvc-dvx.yaml
+kubectl apply -f deployment-dvx.yaml
