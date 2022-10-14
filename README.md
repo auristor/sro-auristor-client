@@ -17,7 +17,7 @@ SRO contains an internaly embedded Helm engine which uses charts that are refere
 
   This Repository contains supporting scripts and objects necessary for creating and deploying the **AuriStorFS KMOD/CSI SpecialResource** Object.
 
-# AuriStorFS KMOD/CSI SpecialResource Versioning and Rolling updates
+# <a name="rolling-updates"></A> AuriStorFS KMOD/CSI SpecialResource Versioning and Rolling Updates
 
 AuriStor periodically releases new versions of the AuriStorFS Kernel Module and AuriStorFS CSI Drivers which can be configured for installation by the AuriStorFS SpecialResource.  
 
@@ -33,7 +33,7 @@ You would then need to have two corresponding SpecialResources
 	* with nodeSelector: { auristor.com/auristorfs-group: auristorfs-group-2 }
 
 
-Details for the Configuration of the AuriStorFS SpecialResource can be found under the [AuriStorFS KMOD/CSI Special Resource Configuration](configuringSpecialResource)
+Details for the Configuration of the AuriStorFS SpecialResource can be found under the [AuriStorFS KMOD/CSI Special Resource Configuration](configuringSpecialResource.md)
 
 # Using the AuriStorFS KMOD/CSI SpecialResource
 
@@ -123,7 +123,7 @@ The Special Resource Operator (SRO) and Node Feature Discovery Operator (NFD) mu
 **Note**: There is an option to install these in a single namespace or all namespaces.  We recommend installing in a single namespace
 
 
-## <a name="creating-sr"></a>Creating Special Resource
+# <a name="creating-sr"></a>Creating Special Resource
 
  Whether you are deploying the same SpecialResource to all nodes in the cluster or are using distict SpecialResources targeting groupings of nodes, you must create a SpecialResource YAML file for each SpecialResource.
 
@@ -181,7 +181,7 @@ The CSI Driver Pods leverage sidecar containers images provided by the Kubernete
 
 The specific sidecars and sidecar container image tags are embedded in the AuriStorFS KMOD/CSI SpecialResource chart version
 
-Detailed information on all required CSI Sidecar container images can be found in the corresponding README of the AuriStorFS KMOD/CSI SpecialResource version (see [chartVersions](chartVersions)/***&lt;chart version&gt;***/README.md 
+Detailed information on all required CSI Sidecar container images can be found in the [Chart README.md](chart/README.md)
 
 For Example, from the documentation for [chart version 0.0.5](chartVersions/0.0.5)
 ```
@@ -206,7 +206,7 @@ It is necessary to create a script to create these supporting ConfigMaps and Sec
 These are provided as examples because your configuration and keytabs will be specific to your organization/installation.  They do NOT correspond to real-life values.
 
 
-## <a name="deploying"></a>Deploying the AuriStorFS Special Resource
+# <a name="deploying"></a>Deploying the AuriStorFS Special Resource
 
 The deployment, undeployment, or reployment of the Special Resources can be accomplished by 
 

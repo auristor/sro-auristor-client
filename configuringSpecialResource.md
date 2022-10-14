@@ -14,97 +14,15 @@ A single YAML file is used to configure your AuriStorFS  SpecialResource object.
 
 ## Selecting a Name for your SpecialResource
 
-<style type="text/css"><!--  .redb  { color: red; font-weight:bold; } --> </style>
-<style type="text/css"><!--  .standout  { color: blue;  font-style: italic; } --> </style>
+You may use any valid Kubernetes name as the ```[resource name]``` for your SpecialResource.  However, due to a fragility in the SRO implementation, you must use the following pattern exactly in the preamble of the SpecialResource YAML.  
 
-You may use any valid Kubernetes name as the <span class=redb> [resource name]</span> for your SpecialResource.  However, due to a fragility in the SRO implementation, you must use the following pattern exactly in the preamble of the SpecialResource YAML.  
+SpecialResource objects themselves are not name-spaced, so to keep scoping clear all related and SRO generated objects for that SpecialResource will be placed in a namespace  ```[resource name]```
 
-SpecialResource objects themselves are not name-spaced, so to keep scoping clear all related and SRO generated objects for that SpecialResource will be placed in a namespace  <span class=redb> [resource name]</span>
+<IMG SRC="special-resource-preamble-1.jpg" width=80%>
 
+For example, if you wanted to use the name ```auristorfs-client``` for your SpecialResource you would configure it this way:
 
-<style type="text/css"><!--  .tab  { margin-left: 30px;  margin-right: 30px;} --> </style>
-<style type="text/css"><!--  .tab1 { margin-left: 20px; } --> </style>
-<style type="text/css"><!--  .tab2 { margin-left: 40px; } --> </style>
-<style type="text/css"><!--  .tab3 { margin-left: 60px; } --> </style>
-<style type="text/css"><!--  .tab4 { margin-left: 80px; font-style: italic; } --> </style>
-
-<TABLE border=3 <table style="background-color:#FFFFE0;">
-    <TR><TD>
-        <p class=tab>
-        apiVersion: sro.openshift.io/v1beta1<BR>
-        kind: SpecialResource<BR>
-        metadata:<BR>
-            <span class=tab1>
-                name: <span class=redb> [resource name]</span><BR>
-            </span>
-        spec:<BR>
-            <span class=tab1>
-                namespace: <span class=redb> [resource name]</span><BR>
-            <span class=tab1>
-                chart:<BR>  
-            </span>
-                <span class=tab2>
-                    name: <span class=redb>[resource name]</span>-chart<BR>
-                </span>
-                <span class=tab2>
-                    version: 0.0.6<BR>
-                </span>
-                <span class=tab2>
-                    repository<BR>
-                </span>     
-                    <span class=tab3>
-                        name: <span class=redb>[resource name]</span><BR>
-                    </span>     
-                    <span class=tab3>
-                        url: cm//<span class=redb>[resource name]</span>/<span class=redb>[resource name]</span>-chart<BR><BR>
-                    </span>   
-                    <span class=tab4>
-                        [... Configuration  continues..]<BR>
-                    </span>            
-        </p>
-    </TD></TD>
-</TABLE>
-
-
-
-For example, if you wanted to use the name <span class=redb> auristorfs-client</span> for your SpecialResource you would configure it this way:
-
-<TABLE border=3 <table style="background-color:#FFFFE0;">
-    <TR><TD>
-        <p class=tab>
-        apiVersion: sro.openshift.io/v1beta1<BR>
-        kind: SpecialResource<BR>
-        metadata:<BR>
-            <span class=tab1>
-                name: <span class=redb> [auristorfs-client]</span><BR>
-            </span>
-        spec:<BR>
-            <span class=tab1>
-                namespace: <span class=redb> [auristorfs-client]</span><BR>
-            <span class=tab1>
-                chart:<BR>  
-            </span>
-                <span class=tab2>
-                    name: <span class=redb>[auristorfs-client]</span>-chart<BR>
-                </span>
-                <span class=tab2>
-                    version: 0.0.6<BR>
-                </span>
-                <span class=tab2>
-                    repository<BR>
-                </span>     
-                    <span class=tab3>
-                        name: <span class=redb>[auristorfs-client]</span><BR>
-                    </span>     
-                    <span class=tab3>
-                        url: cm//<span class=redb>[auristorfs-client]</span>/<span class=redb>[auristorfs-client]</span>-chart<BR><BR>
-                    </span>   
-                    <span class=tab4>
-                        [... Configuration  continues..]<BR>
-                    </span>            
-        </p>
-    </TD></TD>
-</TABLE>
+<IMG SRC="special-resource-preamble-2.jpg" width=80%>
 
 Example SpecialResource can be found at: [auristorfs-client-special-resource.yaml](auristorfs-client-special-resource.yaml) 
 
@@ -223,10 +141,10 @@ The version field must contain the value corresponding to the desired release br
 
 ### Fields that should be left unchanged
 
-* **.set.kind:*** <span class=standout> Values </span>
-* **.set.apiVersion:** <span class=standout> sro.openshift.io/v1beta1 </span>
-* **.set.kmodNames:*** <span class=standout> ["yfs"] </span>
-* **.set.runArgs.platform:*** <span class=standout> "openshift-container-platform" </span>
+* **.set.kind:*** Values 
+* **.set.apiVersion:** sro.openshift.io/v1beta1 
+* **.set.kmodNames:*** ["yfs"] 
+* **.set.runArgs.platform:*** "openshift-container-platform" 
 
 ### Node Selection
 
