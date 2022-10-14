@@ -49,7 +49,7 @@ The following Steps are all that is required to leverage AuriStorFS volumes in y
 
 * [Prepare ConfigMaps and Secrets containing configuration and keys for your deployment](#configmaps)
 
-* [Deploy the Special Resource](#deploy)
+* [Deploy the Special Resource](#deploying)
 
 * Repeat steps 3-6 for each AuriStorFS SpecialResource
 
